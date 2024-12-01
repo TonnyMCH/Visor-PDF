@@ -1,0 +1,21 @@
+{
+    "name": "Amada Divinidad",
+    "short_name": "Divinidad",
+    "description": "Aplicaci\u00f3n de contenido espiritual y recursos para el Santo Rosario.",
+    "icons": [
+        {
+            "src": "https://www.pucv.cl/uuaa/site/artic/20170609/imag/foto_0000000220170609125131.jpg",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "https://www.pucv.cl/uuaa/site/artic/20170609/imag/foto_0000000220170609125131.jpg",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ],
+    "start_url": "./index.html",
+    "display": "standalone",
+    "background_color": "lightgreen",
+    "theme_color": "blue"
+}
