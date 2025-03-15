@@ -3,17 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contenido Externo</title>
+    <meta name="theme-color" content="#ffffff">
+    <title>PDF</title>
+
+    <!-- Agregar el manifiesto para PWA -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- Añadir el ícono para la instalación -->
+    <link rel="icon" href="imagenes/icon.png">
+
+    <style>
+        body {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            justify-items: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        img {
+            cursor: pointer;
+            max-width: 100%;
+            height: auto;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            transition: transform 0.2s;
+        }
+
+            img:hover {
+                transform: scale(1.05);
+            }
+    </style>
 </head>
 <body>
-    <div id="contenido"></div>
+
+    <!-- Imagen 1 -->
+    <a data-id="enlace1">
+        <img src="imagenes/imagen1.png" alt="Enlace 1">
+    </a>
+
+    <!-- Imagen 2 -->
+    <a data-id="enlace2">
+        <img src="imagenes/imagen2.png" alt="Enlace 2">
+    </a>
+
+
+    <!-- Registro del service worker -->
     <script>
-        fetch('contenido.txt')
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById('contenido').innerText = data;
-            })
-            .catch(error => console.error('Error al cargar el contenido:', error));
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/service-worker.js')
+                .then(reg => console.log('Service Worker registrado:', reg))
+                .catch(err => console.error('Error al registrar el Service Worker:', err));
+        }
     </script>
+    <script src="enlaces.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const enlacesElementos = document.querySelectorAll("a[data-id]");
+            enlacesElementos.forEach(a => {
+                const id = a.getAttribute("data-id");
+                if (enlaces[id]) {
+                    a.href = enlaces[id];
+                }
+            });
+        });
+    </script>
+
 </body>
 </html>
