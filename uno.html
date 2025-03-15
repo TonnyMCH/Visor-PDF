@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sellar Imagen en PDF</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+</head>
+<body>
+    <h2>Sube un PDF y coloca un sello</h2>
+
+<p>Subir PDF</p>
+    <input type="file" id="pdfInput" accept="application/pdf">
+<p>Subir PNG</p>
+    <input type="file" id="imageInput" accept="image/png">
+<p>Descargar PDF sellado</p>
+    <button onclick="processPDF()">Procesar PDF</button>
+    
+    <script>
+        async function processPDF() {
+            const pdfFile = document.getElementById('pdfInput').files[0];
+            const imageFile = document.getElementById('imageInput').files[0];
+            if (!pdfFile || !imageFile) {
+                alert('Por favor, sube un PDF y una imagen PNG.');
+                return;
+            }
+
+            const pdfBytes = await pdfFile.arrayBuffer();
+            const imageBytes = await imageFile.arrayBuffer();
+            
+            const pdfDoc = await PDFLib.PDFDocument.load(pdfBytes);
+            const firstPage = pdfDoc.getPages()[0];
+            const pngImage = await pdfDoc.embedPng(imageBytes);
+            const imageDims = pngImage.scale(1);
+            
+            // Medidas en PDFLib están en pt (1 cm ≈ 28.35 pt)
+            const height = 4 * 28.35; // 4 cm en pt
+            const width = (imageDims.width / imageDims.height) * height; // Ajusta el ancho manteniendo la proporción
+            
+            firstPage.drawImage(pngImage, {
+                x: firstPage.getWidth() - width - 50, // Posición en el lado derecho
+                y: firstPage.getHeight() - height - 50, // Ajusta la posición Y
+                width: width,
+                height: height
+            });
+            
+            const modifiedPdfBytes = await pdfDoc.save();
+            
+            const blob = new Blob([modifiedPdfBytes], { type: 'application/pdf' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'pdf_sellado.pdf';
+            link.click();
+        }
+    </script>
+</body>
+</html>
