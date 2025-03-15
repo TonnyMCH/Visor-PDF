@@ -34,7 +34,7 @@
             const imageDims = pngImage.scale(1);
             
             // Medidas en PDFLib están en pt (1 cm ≈ 28.35 pt)
-            const height = 4 * 28.35; // 4 cm en pt
+            const height = 2 * 28.35; // 2 cm en pt
             const width = (imageDims.width / imageDims.height) * height; // Ajusta el ancho manteniendo la proporción
             
             firstPage.drawImage(pngImage, {
