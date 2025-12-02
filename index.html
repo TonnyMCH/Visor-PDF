@@ -1,71 +1,94 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#ffffff">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#111111" />
     <title>PDF</title>
 
-    <!-- Agregar el manifiesto para PWA -->
-    <link rel="manifest" href="manifest.json">
+    <!-- Manifest -->
+    <link rel="manifest" href="manifest.json" />
 
-    <!-- Añadir el ícono para la instalación -->
-    <link rel="icon" href="imagenes/icon.png">
+    <!-- Icono -->
+    <link rel="icon" href="imagenes/icon.png" />
 
     <style>
+        :root {
+            --bg: #111;
+            --card: #1d1d1d;
+            --border: #2f2f2f;
+            --radius: 14px;
+            --shadow: 0 4px 12px rgba(0,0,0,0.35);
+        }
+
         body {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-            justify-items: center;
-            align-items: center;
-            height: 100vh;
             margin: 0;
+            padding: 15px;
+            background: var(--bg);
             font-family: Arial, sans-serif;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 18px;
+        }
+
+        a {
+            width: 100%;
+        }
+
+        .item {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform .15s, box-shadow .15s;
+            box-shadow: var(--shadow);
+        }
+
+        .item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.5);
         }
 
         img {
-            cursor: pointer;
-            max-width: 100%;
+            width: 100%;
             height: auto;
-            border: 2px solid #ccc;
-            border-radius: 10px;
-            transition: transform 0.2s;
+            border-radius: var(--radius);
+            user-select: none;
+            pointer-events: none;
         }
-
-            img:hover {
-                transform: scale(1.05);
-            }
     </style>
 </head>
 <body>
 
-    <!-- Imagen 1 -->
-    <a data-id="enlace1">
-        <img src="imagenes/imagen1.png" alt="Enlace 1">
+    <!-- IMÁGENES -->
+    <a data-id="enlace1" class="item">
+        <img src="imagenes/imagen1.png" alt="Enlace 1" />
     </a>
 
-    <!-- Imagen 2 -->
-    <a data-id="enlace2">
-        <img src="imagenes/imagen2.png" alt="Enlace 2">
+    <a data-id="enlace2" class="item">
+        <img src="imagenes/imagen2.png" alt="Enlace 2" />
     </a>
 
-
-    <!-- Registro del service worker -->
+    <!-- Service Worker -->
     <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/service-worker.js')
-                .then(reg => console.log('Service Worker registrado:', reg))
-                .catch(err => console.error('Error al registrar el Service Worker:', err));
+        if ("serviceWorker" in navigator) {
+            navigator.serviceWorker.register("service-worker.js")
+                .then(() => console.log("Service Worker registrado"))
+                .catch(err => console.error("Error registrando SW:", err));
         }
     </script>
+
+    <!-- Enlaces dinámicos -->
     <script src="enlaces.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", () => {
-            const enlacesElementos = document.querySelectorAll("a[data-id]");
-            enlacesElementos.forEach(a => {
+            const items = document.querySelectorAll("a[data-id]");
+            items.forEach(a => {
                 const id = a.getAttribute("data-id");
-                if (enlaces[id]) {
+                if (typeof enlaces !== "undefined" && enlaces[id]) {
                     a.href = enlaces[id];
                 }
             });
