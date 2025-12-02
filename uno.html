@@ -7,51 +7,109 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 </head>
 <body>
-    <h2>Sube un PDF y coloca un sello</h2>
+    <h2>Sellar PDF con imagen</h2>
 
-<p>Subir PDF</p>
+    <p><b>Subir PDF</b></p>
     <input type="file" id="pdfInput" accept="application/pdf">
-<p>Subir PNG</p>
+
+    <p><b>Subir sello PNG</b></p>
     <input type="file" id="imageInput" accept="image/png">
-<p>Descargar PDF sellado</p>
+
+    <p>
+        <label>
+            <input type="checkbox" id="usarPredeterminado"> Usar sello predeterminado
+        </label>
+    </p>
+
+    <p>
+        <b>Posición del sello (en pt)</b><br>
+        X: <input type="number" id="posX" value="50">
+        Y: <input type="number" id="posY" value="50">
+    </p>
+
+    <p>
+        <b>Tamaño del sello</b> (en cm)<br>
+        Alto (cm): <input type="number" id="sizeCM" value="4" step="0.1">
+    </p>
+
     <button onclick="processPDF()">Procesar PDF</button>
-    
+
     <script>
         async function processPDF() {
             const pdfFile = document.getElementById('pdfInput').files[0];
-            const imageFile = document.getElementById('imageInput').files[0];
-            if (!pdfFile || !imageFile) {
-                alert('Por favor, sube un PDF y una imagen PNG.');
+            const usarPredeterminado = document.getElementById('usarPredeterminado').checked;
+            const imagenSubida = document.getElementById('imageInput').files[0];
+
+            if (!pdfFile) {
+                alert('Por favor sube un PDF.');
                 return;
             }
 
+            // Cargar PDF
             const pdfBytes = await pdfFile.arrayBuffer();
-            const imageBytes = await imageFile.arrayBuffer();
-            
             const pdfDoc = await PDFLib.PDFDocument.load(pdfBytes);
             const firstPage = pdfDoc.getPages()[0];
+
+            let imageBytes;
+
+            // ✔ Si marca sello predeterminado, cargar imagen interna
+            if (usarPredeterminado) {
+                const img = new Image();
+                img.src = "imagenes/sello.png";
+
+                // Esperar que cargue la imagen
+                await new Promise(resolve => img.onload = resolve);
+
+                // Convertir imagen predeterminada a bytes
+                const canvas = document.createElement("canvas");
+                canvas.width = img.width;
+                canvas.height = img.height;
+
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(img, 0, 0);
+
+                const dataURL = canvas.toDataURL("image/png");
+                imageBytes = Uint8Array.from(atob(dataURL.split(",")[1]), c => c.charCodeAt(0));
+
+            } else {
+                // ✔ Si NO marca la casilla, usar la imagen subida
+                if (!imagenSubida) {
+                    alert("Sube una imagen o marca sello predeterminado.");
+                    return;
+                }
+                imageBytes = await imagenSubida.arrayBuffer();
+            }
+
+            // Insertar imagen
             const pngImage = await pdfDoc.embedPng(imageBytes);
             const imageDims = pngImage.scale(1);
-            
-            // Medidas en PDFLib están en pt (1 cm ≈ 28.35 pt)
-            const height = 2 * 28.35; // 2 cm en pt
-            const width = (imageDims.width / imageDims.height) * height; // Ajusta el ancho manteniendo la proporción
-            
+
+            // Tamaño en cm
+            const heightCM = parseFloat(document.getElementById("sizeCM").value);
+            const heightPT = heightCM * 28.35;
+            const widthPT = (imageDims.width / imageDims.height) * heightPT;
+
+            // Posición
+            const posX = parseFloat(document.getElementById("posX").value);
+            const posY = parseFloat(document.getElementById("posY").value);
+
             firstPage.drawImage(pngImage, {
-                x: firstPage.getWidth() - width - 50, // Posición en el lado derecho
-                y: firstPage.getHeight() - height - 50, // Ajusta la posición Y
-                width: width,
-                height: height
+                x: posX,
+                y: posY,
+                width: widthPT,
+                height: heightPT
             });
-            
+
+            // Descargar PDF
             const modifiedPdfBytes = await pdfDoc.save();
-            
             const blob = new Blob([modifiedPdfBytes], { type: 'application/pdf' });
+
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
             link.download = 'pdf_sellado.pdf';
             link.click();
         }
     </script>
+
 </body>
 </html>
