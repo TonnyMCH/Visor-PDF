@@ -4,38 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Unificar Imágenes y PDFs</title>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.16.0/pdf-lib.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfjs-dist/2.16.105/pdf.min.js"></script>
 
     <style>
         body {
             font-family: Arial;
-            margin: 0;
             padding: 20px;
             max-width: 600px;
             margin: auto;
-            background: #f7f7f7;
+            background: #f4f4f4;
         }
-
-        h2 {
-            text-align: center;
-        }
-
+        h2 { text-align: center; }
         .card {
             background: white;
             padding: 15px;
             border-radius: 12px;
             box-shadow: 0 3px 8px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
         }
-
         input[type="file"] {
             width: 100%;
             padding: 12px;
             font-size: 16px;
         }
-
         button {
             width: 100%;
             padding: 14px;
@@ -43,89 +33,97 @@
             margin-top: 12px;
             border: none;
             border-radius: 10px;
-            background: #2e7dff;
             color: white;
             cursor: pointer;
         }
+        .primary { background: #2e7dff; }
+        .primary:hover { background: #1b5fcc; }
 
-        button:hover {
-            background: #1b5fcc;
-        }
-
-        .whatsapp-btn {
-            background: #25D366;
-        }
-        .whatsapp-btn:hover {
-            background: #1ba64c;
-        }
-
+        .whatsapp-btn { background: #25D366; }
+        .whatsapp-btn:hover { background: #1aa64a; }
     </style>
 </head>
 <body>
 
-    <h2>Unificar Imágenes o PDFs en un PDF</h2>
+<h2>Unificar Imágenes o PDFs</h2>
 
-    <div class="card">
-        <label><b>Selecciona imágenes o PDFs:</b></label>
-        <input type="file" id="fileInput" multiple accept="image/*,application/pdf">
+<div class="card">
+    <input type="file" id="fileInput" multiple accept="image/*,application/pdf">
 
-        <button onclick="mergeFiles()">Unificar en PDF</button>
-        <button class="whatsapp-btn" onclick="shareWhatsApp()">Compartir por WhatsApp</button>
-    </div>
+    <button class="primary" onclick="mergeFiles()">Unificar en PDF</button>
+    <button class="whatsapp-btn" onclick="shareWhatsApp()">Compartir PDF por WhatsApp</button>
+</div>
 
-    <script>
-        let lastPDFBlob = null;
+<script>
+    let lastPDFBlob = null;
 
-        async function mergeFiles() {
-            const fileInput = document.getElementById('fileInput');
-            const files = fileInput.files;
+    async function mergeFiles() {
+        const fileInput = document.getElementById("fileInput");
+        const files = fileInput.files;
 
-            if (files.length === 0) {
-                alert("Selecciona al menos un archivo.");
-                return;
-            }
+        if (files.length === 0) {
+            alert("Selecciona al menos un archivo.");
+            return;
+        }
 
-            const { PDFDocument } = PDFLib;
-            const mergedPdf = await PDFDocument.create();
+        const { PDFDocument } = PDFLib;
+        const mergedPdf = await PDFDocument.create();
 
-            for (const file of files) {
-                if (file.type === "application/pdf") {
-                    const pdfBytes = await file.arrayBuffer();
-                    const pdfDoc = await PDFDocument.load(pdfBytes);
-                    const copiedPages = await mergedPdf.copyPages(pdfDoc, pdfDoc.getPageIndices());
-                    copiedPages.forEach(page => mergedPdf.addPage(page));
-                } else if (file.type.startsWith("image/")) {
-                    const imageBytes = await file.arrayBuffer();
-                    const img = await mergedPdf.embedJpg(imageBytes).catch(() => mergedPdf.embedPng(imageBytes));
-                    const page = mergedPdf.addPage([img.width, img.height]);
-                    page.drawImage(img, { x: 0, y: 0, width: img.width, height: img.height });
+        for (const file of files) {
+            const bytes = await file.arrayBuffer();
+
+            if (file.type === "application/pdf") {
+                const pdfDoc = await PDFDocument.load(bytes);
+                const pages = await mergedPdf.copyPages(pdfDoc, pdfDoc.getPageIndices());
+                pages.forEach(p => mergedPdf.addPage(p));
+
+            } else {
+                let img;
+                try {
+                    img = await mergedPdf.embedJpg(bytes);
+                } catch {
+                    img = await mergedPdf.embedPng(bytes);
                 }
+
+                const page = mergedPdf.addPage([img.width, img.height]);
+                page.drawImage(img, { x: 0, y: 0, width: img.width, height: img.height });
             }
-
-            const pdfBytes = await mergedPdf.save();
-            lastPDFBlob = new Blob([pdfBytes], { type: "application/pdf" });
-
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(lastPDFBlob);
-            link.download = "unificado.pdf";
-            link.click();
         }
 
-        function shareWhatsApp() {
-            if (!lastPDFBlob) {
-                alert("Primero genera el PDF.");
-                return;
-            }
+        const pdfBytes = await mergedPdf.save();
+        lastPDFBlob = new Blob([pdfBytes], { type: "application/pdf" });
 
-            const fileURL = URL.createObjectURL(lastPDFBlob);
+        // Descargar
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(lastPDFBlob);
+        link.download = "unificado.pdf";
+        link.click();
+    }
 
-            const mensaje = encodeURIComponent(
-                "Aquí tienes el PDF unificado:\n" + fileURL
-            );
-
-            window.open("https://wa.me/?text=" + mensaje, "_blank");
+    async function shareWhatsApp() {
+        if (!lastPDFBlob) {
+            alert("Primero genera el PDF unificado.");
+            return;
         }
-    </script>
+
+        const file = new File([lastPDFBlob], "unificado.pdf", { type: "application/pdf" });
+
+        // Verificar si el dispositivo soporta compartir archivos
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            try {
+                await navigator.share({
+                    files: [file],
+                    title: "PDF Unificado",
+                    text: "Aquí tienes el archivo PDF unificado."
+                });
+            } catch (err) {
+                console.error("Error al compartir:", err);
+            }
+        } else {
+            alert("Tu dispositivo o navegador no permite enviar archivos a WhatsApp desde aquí.\n\nPrueba desde un móvil Android.");
+        }
+    }
+</script>
 
 </body>
 </html>
