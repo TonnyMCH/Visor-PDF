@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Editor — pegar texto y guardar PDF</title>
+  <style>
+    :root{--paper-width:800px;}
+    body{font-family: Arial, sans-serif; padding:18px; background:#f3f4f6}
+    .app{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 520px;gap:18px}
+    .panel{background:#fff;border-radius:8px;padding:14px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+    textarea{width:100%;height:420px;font-size:13px;font-family:monospace;padding:10px;resize:vertical}
+    label{display:inline-flex;align-items:center;gap:8px}
+    .controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+
+    /* Preview / página imprimible */
+    #previewWrap{width:21.59cm;min-height:27.94cm;margin:10px auto;padding:2cm;background:white;border:1px solid #ddd;box-sizing:border-box}
+    #preview{min-height:600px;white-space:pre-wrap}
+    #preview p{margin:8pt 0}
+
+    .small{font-size:13px;color:#444}
+    button{padding:8px 12px;border-radius:6px;border:1px solid #bbb;background:#fff;cursor:pointer}
+    button.primary{background:#0b63d6;color:#fff;border-color:#0b63d6}
+
+    /* For print (window.print or html2pdf) try to respect styles */
+    @media print{
+      body{background:transparent}
+      .app, .panel{box-shadow:none}
+      #previewWrap{box-shadow:none;border:none;margin:0}
+    }
+  </style>
+</head>
+<body>
+  <h2>Editor: pegar texto y guardar en PDF</h2>
+  <div class="app">
+    <div class="panel">
+      <p class="small">Pega tu texto en el cuadro. El texto se convertirá en párrafos automáticamente al presionar <strong>Aplicar formato</strong>.</p>
+      <textarea id="source" placeholder="Pega aquí tu texto..."></textarea>
+
+      <div class="controls">
+        <label><input type="checkbox" id="zeroSpacing"> Espaciado entre párrafos = 0</label>
+        <label class="small">Tamaño de letra: <select id="fontSize"><option value="12pt">12 pt (fijo)</option></select></label>
+        <label class="small">Fuente: <select id="fontFamily"><option value="'Times New Roman', Times, serif">Times New Roman</option></select></label>
+        <button onclick="applyFormatting()" class="primary">Aplicar formato</button>
+        <button onclick="printPreview()">Abrir diálogo Imprimir / Guardar PDF</button>
+        <button onclick="downloadPdf()">Descargar PDF (generado)</button>
+      </div>
+
+      <p class="small">Consejo: si quieres que los saltos de párrafo sean los que tienes en el texto, deja líneas en blanco entre párrafos. Si sólo hay saltos simples, se conservarán como <code>&lt;br&gt;</code>.</p>
+    </div>
+
+    <div class="panel">
+      <h3>Vista previa (8.5 x 11 / A4 simulada)</h3>
+      <div id="previewWrap">
+        <div id="preview" style="font-family:'Times New Roman', Times, serif; font-size:12pt"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- html2pdf (CDN) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+  <script>
+    function applyFormatting(){
+      const raw = document.getElementById('source').value || '';
+      // Normalize newlines
+      const text = raw.replace(/\r/g,'');
+      // Split paragraphs by one or more blank lines
+      const paras = text.split(/\n\s*\n/);
+      const pHtml = paras.map(p => {
+        // Replace single newlines inside a paragraph with <br>
+        const withBreaks = p.replace(/\n/g,'<br>');
+        return '<p>' + escapeHtml(withBreaks) + '</p>';
+      }).join('');
+
+      const preview = document.getElementById('preview');
+      // We inserted escaped HTML above; unescape purposely for <br> to render.
+      preview.innerHTML = pHtml.replace(/&lt;br&gt;/g,'<br>');
+
+      // Apply font and spacing controls
+      const zero = document.getElementById('zeroSpacing').checked;
+      preview.querySelectorAll('p').forEach(p => p.style.margin = zero ? '0' : '8pt 0');
+      const size = document.getElementById('fontSize').value;
+      preview.style.fontSize = size;
+      const family = document.getElementById('fontFamily').value;
+      preview.style.fontFamily = family;
+
+      // Keep previewWrap width simple for printing
+      document.getElementById('previewWrap').style.fontFamily = family;
+    }
+
+    function escapeHtml(unsafe) {
+      return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\"/g, "&quot;")
+        .replace(/\'/g, "&#039;");
+    }
+
+    function printPreview(){
+      // Ensure formatting applied
+      applyFormatting();
+      // Open browser print dialog: user puede elegir "Guardar como PDF"
+      window.print();
+    }
+
+    function downloadPdf(){
+      applyFormatting();
+      const element = document.getElementById('previewWrap');
+      // Configuración básica para generar PDF
+      const opt = {
+        margin:       0, // márgenes manejados por CSS (2cm en previewWrap)
+        filename:     'documento.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 3, letterRendering: true, useCORS: true },
+        jsPDF:        { unit: 'cm', format: [21.59, 27.94], orientation: 'portrait' }
+      };
+      html2pdf().set(opt).from(element).save();
+    }
+
+    // Load example placeholder
+    document.getElementById('source').value = 'Ejemplo de texto.\n\nEste es un segundo párrafo.\nCon una segunda línea dentro del mismo párrafo.';
+    applyFormatting();
+  </script>
+</body>
+</html>
