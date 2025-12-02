@@ -5,6 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sellar Imagen en PDF</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+
+    <style>
+        #whatsappBtn {
+            display: none;
+            margin-top: 20px;
+            background: #25D366;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+    </style>
+
 </head>
 <body>
     <h2>Sellar PDF con imagen</h2>
@@ -29,7 +44,12 @@
 
     <button onclick="processPDF()">Procesar PDF</button>
 
+    <!-- BOTÓN WHATSAPP -->
+    <button id="whatsappBtn" onclick="shareWhatsApp()">📤 Compartir por WhatsApp</button>
+
     <script>
+        let lastPDFBlob = null;
+
         function toggleImageInput() {
             const check = document.getElementById("usarPredeterminado").checked;
             const imageInput = document.getElementById("imageInput");
@@ -55,10 +75,8 @@
             let imageBytes;
 
             if (usarPredeterminado) {
-                // Cargar imagen predeterminada desde carpeta "imagenes"
                 const response = await fetch("imagenes/sello.png");
                 imageBytes = await response.arrayBuffer();
-
             } else {
                 if (!imagenSubida) {
                     alert("Sube una imagen o marca sello predeterminado.");
@@ -74,12 +92,11 @@
             const heightPT = heightCM * 28.35;
             const widthPT = (imageDims.width / imageDims.height) * heightPT;
 
-            // ⭐ POSICIÓN: ARRIBA A LA DERECHA ⭐
             const pageWidth = firstPage.getWidth();
             const pageHeight = firstPage.getHeight();
-
             const margin = 20;
 
+            // POSICIÓN ARRIBA A LA DERECHA
             const posX = pageWidth - widthPT - margin;
             const posY = pageHeight - heightPT - margin;
 
@@ -91,12 +108,40 @@
             });
 
             const modifiedPdfBytes = await pdfDoc.save();
-            const blob = new Blob([modifiedPdfBytes], { type: 'application/pdf' });
+            const blob = new Blob([modifiedPdfBytes], { type: "application/pdf" });
+
+            lastPDFBlob = blob;
 
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
             link.download = 'pdf_sellado.pdf';
             link.click();
+
+            // Mostrar botón WhatsApp
+            document.getElementById("whatsappBtn").style.display = "block";
+        }
+
+        async function shareWhatsApp() {
+            if (!lastPDFBlob) {
+                alert("Primero genera el PDF.");
+                return;
+            }
+
+            const file = new File([lastPDFBlob], "pdf_sellado.pdf", { type: "application/pdf" });
+
+            // ✔ Primero intentamos "navigator.share"
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                await navigator.share({
+                    files: [file],
+                    title: "PDF Sellado",
+                    text: "Te envío el PDF sellado."
+                });
+                return;
+            }
+
+            // ✔ Si NO es compatible, enviar link a WhatsApp Web
+            const url = encodeURIComponent("Aquí está el PDF sellado.");
+            window.open("https://wa.me/?text=" + url, "_blank");
         }
     </script>
 
