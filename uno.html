@@ -17,7 +17,8 @@
 
     <p>
         <label>
-            <input type="checkbox" id="usarPredeterminado"> Usar sello predeterminado
+            <input type="checkbox" id="usarPredeterminado" onchange="toggleImageInput()">
+            Usar sello predeterminado
         </label>
     </p>
 
@@ -29,6 +30,14 @@
     <button onclick="processPDF()">Procesar PDF</button>
 
     <script>
+        function toggleImageInput() {
+            const check = document.getElementById("usarPredeterminado").checked;
+            const imageInput = document.getElementById("imageInput");
+
+            imageInput.disabled = check;
+            imageInput.style.opacity = check ? "0.5" : "1";
+        }
+
         async function processPDF() {
             const pdfFile = document.getElementById('pdfInput').files[0];
             const usarPredeterminado = document.getElementById('usarPredeterminado').checked;
@@ -39,29 +48,16 @@
                 return;
             }
 
-            // Cargar PDF
             const pdfBytes = await pdfFile.arrayBuffer();
             const pdfDoc = await PDFLib.PDFDocument.load(pdfBytes);
             const firstPage = pdfDoc.getPages()[0];
 
             let imageBytes;
 
-            // ✔ Sello predeterminado
             if (usarPredeterminado) {
-                const img = new Image();
-                img.src = "imagenes/sello.png";
-
-                await new Promise(resolve => img.onload = resolve);
-
-                const canvas = document.createElement("canvas");
-                canvas.width = img.width;
-                canvas.height = img.height;
-
-                const ctx = canvas.getContext("2d");
-                ctx.drawImage(img, 0, 0);
-
-                const dataURL = canvas.toDataURL("image/png");
-                imageBytes = Uint8Array.from(atob(dataURL.split(",")[1]), c => c.charCodeAt(0));
+                // Cargar imagen predeterminada desde carpeta "imagenes"
+                const response = await fetch("imagenes/sello.png");
+                imageBytes = await response.arrayBuffer();
 
             } else {
                 if (!imagenSubida) {
@@ -71,6 +67,38 @@
                 imageBytes = await imagenSubida.arrayBuffer();
             }
 
-            // Insertar imagen
             const pngImage = await pdfDoc.embedPng(imageBytes);
-            const image
+            const imageDims = pngImage.scale(1);
+
+            const heightCM = parseFloat(document.getElementById("sizeCM").value);
+            const heightPT = heightCM * 28.35;
+            const widthPT = (imageDims.width / imageDims.height) * heightPT;
+
+            // ⭐ POSICIÓN: ARRIBA A LA DERECHA ⭐
+            const pageWidth = firstPage.getWidth();
+            const pageHeight = firstPage.getHeight();
+
+            const margin = 20;
+
+            const posX = pageWidth - widthPT - margin;
+            const posY = pageHeight - heightPT - margin;
+
+            firstPage.drawImage(pngImage, {
+                x: posX,
+                y: posY,
+                width: widthPT,
+                height: heightPT
+            });
+
+            const modifiedPdfBytes = await pdfDoc.save();
+            const blob = new Blob([modifiedPdfBytes], { type: 'application/pdf' });
+
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'pdf_sellado.pdf';
+            link.click();
+        }
+    </script>
+
+</body>
+</html>
