@@ -2,84 +2,169 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
     <meta name="theme-color" content="#111111" />
     <title>PDF</title>
 
-    <!-- Manifest -->
     <link rel="manifest" href="manifest.json" />
-
-    <!-- Icono -->
     <link rel="icon" href="imagenes/icon.png" />
 
     <style>
+        /* ------------------------------ */
+        /* MODO OSCURO (default) */
+        /* ------------------------------ */
         :root {
             --bg: #111;
-            --card: #1d1d1d;
-            --border: #2f2f2f;
-            --radius: 14px;
-            --shadow: 0 4px 12px rgba(0,0,0,0.35);
+            --card: #1c1c1c;
+            --border: #2a2a2a;
+            --radius: 18px;
+            --shadow: 0 6px 16px rgba(0,0,0,0.45);
+            --shadow-hover: 0 12px 30px rgba(0,0,0,0.55);
+            --shadow-pressed: 0 3px 8px rgba(0,0,0,0.35);
+            --text: #f0f0f0;
+            --text-secondary: #bbb;
         }
 
+        /* ------------------------------ */
+        /* MODO CLARO AUTOMÁTICO */
+        /* ------------------------------ */
+        @media (prefers-color-scheme: light) {
+            :root {
+                --bg: #f1f1f1;
+                --card: #fff;
+                --border: #ddd;
+                --shadow: 0 4px 14px rgba(0,0,0,0.12);
+                --shadow-hover: 0 12px 30px rgba(0,0,0,0.20);
+                --shadow-pressed: 0 3px 8px rgba(0,0,0,0.10);
+                --text: #111;
+                --text-secondary: #444;
+            }
+        }
+
+        /* ------------------------------ */
+        /* GENERAL */
+        /* ------------------------------ */
         body {
             margin: 0;
-            padding: 15px;
+            padding: 18px;
             background: var(--bg);
             font-family: Arial, sans-serif;
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 18px;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            justify-content: center;
+            gap: 22px;
+            color: var(--text);
         }
 
         a {
             width: 100%;
+            text-decoration: none;
+            color: inherit;
         }
 
+        /* ------------------------------ */
+        /* TARJETAS TIPO BOTÓN */
+        /* ------------------------------ */
         .item {
             background: var(--card);
             border: 1px solid var(--border);
             border-radius: var(--radius);
-            padding: 10px;
+            padding: 18px;
+            height: 190px;
+
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            transition: transform .15s, box-shadow .15s;
+
             box-shadow: var(--shadow);
+            transition: 
+                transform 0.15s ease,
+                box-shadow 0.20s ease;
         }
 
-        .item:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+        @media (hover: hover) {
+            .item:hover {
+                transform: translateY(-6px);
+                box-shadow: var(--shadow-hover);
+            }
         }
 
-        img {
-            width: 100%;
+        /* ------------------------------ */
+        /* PRESIÓN (push button en mobile) */
+        /* ------------------------------ */
+        .item:active {
+            transform: scale(0.96);
+            box-shadow: var(--shadow-pressed);
+        }
+
+        /* ------------------------------ */
+        /* IMÁGENES / SVG con animación */
+        /* ------------------------------ */
+        .item img {
+            width: 70%;
             height: auto;
             border-radius: var(--radius);
+            opacity: 0;
+            transform: scale(0.92);
+            animation: fadeIn 0.5s ease-out forwards;
+
             user-select: none;
+            -webkit-user-drag: none;
             pointer-events: none;
         }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* ------------------------------ */
+        /* TEXTO BAJO LA IMAGEN */
+        /* ------------------------------ */
+        .texto {
+            margin-top: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
     </style>
 </head>
 <body>
 
-    <!-- IMÁGENES -->
+    <!-- TARJETAS CON TEXTO -->
     <a data-id="enlace1" class="item">
         <img src="imagenes/imagen1.png" alt="Enlace 1" />
+        <span class="texto">Opción 1</span>
     </a>
 
     <a data-id="enlace2" class="item">
         <img src="imagenes/imagen2.png" alt="Enlace 2" />
+        <span class="texto">Opción 2</span>
     </a>
 
     <a data-id="enlace3" class="item">
         <img src="imagenes/imagen3.png" alt="Enlace 3" />
+        <span class="texto">Opción 3</span>
     </a>
 
     <a data-id="enlace4" class="item">
         <img src="imagenes/imagen4.png" alt="Enlace 4" />
+        <span class="texto">Opción 4</span>
     </a>
 
+    <!-- VIBRACIÓN (HAPTIC FEEDBACK) -->
+    <script>
+        document.querySelectorAll('.item').forEach(btn => {
+            btn.addEventListener('touchstart', () => {
+                if (navigator.vibrate) navigator.vibrate(20);
+            });
+        });
+    </script>
 
     <!-- Service Worker -->
     <script>
