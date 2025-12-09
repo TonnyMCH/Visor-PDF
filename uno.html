@@ -35,7 +35,7 @@
             font-size: 15px;
         }
 
-        input[type="file"], input[type="number"] {
+        input[type="file"], input[type="number"], input[type="text"] {
             width: 100%;
             padding: 12px;
             font-size: 16px;
@@ -75,7 +75,6 @@
             color: white;
         }
 
-        /* Espacio inferior para que no quede pegado en pantallas pequeñas */
         .space {
             height: 20px;
         }
@@ -103,6 +102,9 @@
     <p>Tamaño del sello (alto en cm)</p>
     <input type="number" id="sizeCM" value="4" step="0.1">
 
+    <p>Nombre del PDF sellado</p>
+    <input type="text" id="nombrePDF" placeholder="Ej: documento_sellado">
+
     <button id="processBtn" onclick="processPDF()">Procesar PDF</button>
 
     <button id="whatsappBtn" onclick="shareWhatsApp()">📤 Compartir por WhatsApp</button>
@@ -112,6 +114,7 @@
 
 <script>
     let lastPDFBlob = null;
+    let nombreFinalGlobal = "pdf_sellado.pdf"; // Usado también en WhatsApp
 
     function toggleImageInput() {
         const check = document.getElementById("usarPredeterminado").checked;
@@ -174,9 +177,22 @@
 
         lastPDFBlob = blob;
 
+        // === NOMBRE DEFINIDO POR EL USUARIO ===
+        let nombreUsuario = document.getElementById("nombrePDF").value.trim();
+
+        if (!nombreUsuario) {
+            const originalName = pdfFile.name.replace(/\.pdf$/i, "");
+            const fecha = new Date().toISOString().slice(0,10);
+            nombreUsuario = `${originalName}_sellado_${fecha}`;
+        }
+
+        nombreFinalGlobal = nombreUsuario.endsWith(".pdf")
+            ? nombreUsuario
+            : nombreUsuario + ".pdf";
+
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = 'pdf_sellado.pdf';
+        link.download = nombreFinalGlobal;
         link.click();
 
         document.getElementById("whatsappBtn").style.display = "block";
@@ -188,7 +204,7 @@
             return;
         }
 
-        const file = new File([lastPDFBlob], "pdf_sellado.pdf", { type: "application/pdf" });
+        const file = new File([lastPDFBlob], nombreFinalGlobal, { type: "application/pdf" });
 
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
             await navigator.share({
