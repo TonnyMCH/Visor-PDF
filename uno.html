@@ -49,7 +49,7 @@
             font-size: 15px;
         }
 
-        #usarPredeterminado {
+        input[type="checkbox"] {
             transform: scale(1.4);
             margin-right: 8px;
         }
@@ -80,6 +80,7 @@
         }
     </style>
 </head>
+
 <body>
 
 <div class="container">
@@ -99,14 +100,20 @@
         </label>
     </p>
 
+    <p>
+        <label>
+            <input type="checkbox" id="todasPaginas">
+            Colocar el sello en todas las hojas
+        </label>
+    </p>
+
     <p>Tamaño del sello (alto en cm)</p>
     <input type="number" id="sizeCM" value="4" step="0.1">
 
     <p>Nombre del PDF sellado</p>
-    <input type="text" id="nombrePDF" placeholder="Ej: documento_sellado">
+    <input type="text" id="nombrePDF" placeholder="Ejemplo: documento_sellado">
 
     <button id="processBtn" onclick="processPDF()">Procesar PDF</button>
-
     <button id="whatsappBtn" onclick="shareWhatsApp()">📤 Compartir por WhatsApp</button>
 
     <div class="space"></div>
@@ -114,7 +121,7 @@
 
 <script>
     let lastPDFBlob = null;
-    let nombreFinalGlobal = "pdf_sellado.pdf"; // Usado también en WhatsApp
+    let lastPDFName = "pdf_sellado.pdf";
 
     function toggleImageInput() {
         const check = document.getElementById("usarPredeterminado").checked;
@@ -127,7 +134,9 @@
     async function processPDF() {
         const pdfFile = document.getElementById('pdfInput').files[0];
         const usarPredeterminado = document.getElementById('usarPredeterminado').checked;
+        const todasPaginas = document.getElementById('todasPaginas').checked;
         const imagenSubida = document.getElementById('imageInput').files[0];
+        const nombreUsuario = document.getElementById("nombrePDF").value.trim();
 
         if (!pdfFile) {
             alert('Por favor sube un PDF.');
@@ -136,7 +145,6 @@
 
         const pdfBytes = await pdfFile.arrayBuffer();
         const pdfDoc = await PDFLib.PDFDocument.load(pdfBytes);
-        const firstPage = pdfDoc.getPages()[0];
 
         let imageBytes;
 
@@ -145,7 +153,7 @@
             imageBytes = await response.arrayBuffer();
         } else {
             if (!imagenSubida) {
-                alert("Sube una imagen o marca sello predeterminado.");
+                alert("Sube una imagen o usa el sello predeterminado.");
                 return;
             }
             imageBytes = await imagenSubida.arrayBuffer();
@@ -158,41 +166,50 @@
         const heightPT = heightCM * 28.35;
         const widthPT = (imageDims.width / imageDims.height) * heightPT;
 
-        const pageWidth = firstPage.getWidth();
-        const pageHeight = firstPage.getHeight();
-        const margin = 20;
+        const pages = pdfDoc.getPages();
 
-        const posX = pageWidth - widthPT - margin;
-        const posY = pageHeight - heightPT - margin;
+        pages.forEach(page => {
+            const pageWidth = page.getWidth();
+            const pageHeight = page.getHeight();
+            const margin = 20;
 
-        firstPage.drawImage(pngImage, {
-            x: posX,
-            y: posY,
-            width: widthPT,
-            height: heightPT
+            const posX = pageWidth - widthPT - margin;
+            const posY = pageHeight - heightPT - margin;
+
+            if (todasPaginas) {
+                page.drawImage(pngImage, { x: posX, y: posY, width: widthPT, height: heightPT });
+            }
         });
+
+        // Si NO es todas las páginas, solo la primera
+        if (!todasPaginas) {
+            const firstPage = pages[0];
+            const pageWidth = firstPage.getWidth();
+            const pageHeight = firstPage.getHeight();
+            const margin = 20;
+
+            const posX = pageWidth - widthPT - margin;
+            const posY = pageHeight - heightPT - margin;
+
+            firstPage.drawImage(pngImage, { x: posX, y: posY, width: widthPT, height: heightPT });
+        }
 
         const modifiedPdfBytes = await pdfDoc.save();
         const blob = new Blob([modifiedPdfBytes], { type: "application/pdf" });
-
         lastPDFBlob = blob;
 
-        // === NOMBRE DEFINIDO POR EL USUARIO ===
-        let nombreUsuario = document.getElementById("nombrePDF").value.trim();
-
-        if (!nombreUsuario) {
-            const originalName = pdfFile.name.replace(/\.pdf$/i, "");
-            const fecha = new Date().toISOString().slice(0,10);
-            nombreUsuario = `${originalName}_sellado_${fecha}`;
+        // Nombre final
+        if (nombreUsuario) {
+            lastPDFName = nombreUsuario.endsWith(".pdf") ? nombreUsuario : nombreUsuario + ".pdf";
+        } else {
+            const baseName = pdfFile.name.replace(/\.pdf$/i, "");
+            const fecha = new Date().toISOString().slice(0, 10);
+            lastPDFName = `${baseName}_sellado_${fecha}.pdf`;
         }
-
-        nombreFinalGlobal = nombreUsuario.endsWith(".pdf")
-            ? nombreUsuario
-            : nombreUsuario + ".pdf";
 
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = nombreFinalGlobal;
+        link.download = lastPDFName;
         link.click();
 
         document.getElementById("whatsappBtn").style.display = "block";
@@ -204,12 +221,12 @@
             return;
         }
 
-        const file = new File([lastPDFBlob], nombreFinalGlobal, { type: "application/pdf" });
+        const file = new File([lastPDFBlob], lastPDFName, { type: "application/pdf" });
 
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
             await navigator.share({
                 files: [file],
-                title: "PDF Sellado",
+                title: lastPDFName,
                 text: "Aquí tienes el PDF sellado."
             });
             return;
