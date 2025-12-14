@@ -1,134 +1,163 @@
 <!DOCTYPE html>
-
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bingo Móvil - 4 Cartones</title>
-  <style>
-    body{
-      margin:0; font-family:system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      background:#0f172a; color:#e5e7eb;
-    }
-    header{
-      padding:12px; text-align:center; background:#020617;
-      font-size:18px; font-weight:600;
-    }
-    .container{ padding:10px; }
-    .controls{
-      display:flex; gap:8px; margin-bottom:12px;
-    }
-    input[type=number]{
-      flex:1; padding:10px; font-size:18px; border-radius:10px; border:none;
-      outline:none;
-    }
-    button{
-      padding:10px 14px; font-size:16px; border-radius:10px; border:none;
-      background:#22c55e; color:#052e16; font-weight:600;
-    }
-    button.desmarcar{ background:#38bdf8; color:#082f49; }
-    button.clear{ background:#ef4444; color:#450a0a; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bingo con Cámara</title>
 
-```
-.cartones{
-  display:grid; grid-template-columns:1fr; gap:14px;
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+<style>
+body{
+  margin:0;
+  font-family:system-ui, sans-serif;
+  background:#0f172a;
+  color:#e5e7eb;
+}
+header{
+  padding:12px;
+  text-align:center;
+  background:#020617;
+  font-size:18px;
+  font-weight:600;
+}
+.container{ padding:10px; }
+.controls{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+  margin-bottom:10px;
+}
+input{
+  flex:1;
+  padding:10px;
+  font-size:18px;
+  border-radius:10px;
+  border:none;
+}
+button{
+  padding:10px;
+  border:none;
+  border-radius:10px;
+  font-weight:600;
+}
+.marcar{ background:#22c55e; }
+.cam{ background:#facc15; }
+.des{ background:#38bdf8; }
+.clear{ background:#ef4444; }
+
+video{
+  width:100%;
+  border-radius:14px;
+  margin-bottom:8px;
 }
 
 .carton{
-  background:#020617; border-radius:14px; padding:10px;
+  background:#020617;
+  border-radius:14px;
+  padding:10px;
+  margin-bottom:12px;
 }
-.carton h3{ margin:4px 0 8px; text-align:center; }
-
 .grid{
-  display:grid; grid-template-columns:repeat(5, 1fr); gap:6px;
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:6px;
 }
 .cell{
-  background:#1e293b; border-radius:8px; text-align:center;
-  padding:10px 0; font-size:16px; cursor:pointer; user-select:none;
+  background:#1e293b;
+  border-radius:8px;
+  padding:10px 0;
+  text-align:center;
+  font-size:16px;
 }
 .cell.marked{
-  background:#22c55e; color:#052e16; font-weight:700;
+  background:#22c55e;
+  color:#052e16;
+  font-weight:700;
 }
-
-footer{
-  text-align:center; font-size:12px; opacity:.7; margin-top:12px;
-}
-```
-
-  </style>
+</style>
 </head>
+
 <body>
-  <header>🟢 Bingo móvil – 4 cartones</header>
+<header>📷 Bingo con cámara (4 cartones)</header>
 
-  <div class="container">
-    <div class="controls">
-      <input type="number" id="num" placeholder="Número cantado" min="1" max="90">
-      <button onclick="marcarNumero()">Marcar</button>
-      <button class="desmarcar" onclick="desmarcarTodo()">Desmarcar</button>
-      <button class="clear" onclick="limpiarTodo()">Limpiar</button>
-    </div>
-
-```
-<div class="cartones" id="cartones"></div>
-
-<footer>
-  Toca una casilla para marcar o desmarcar manualmente
-</footer>
-```
-
+<div class="container">
+  <div class="controls">
+    <input id="num" placeholder="Número detectado">
+    <button class="marcar" onclick="marcar()">Marcar</button>
+    <button class="cam" onclick="capturar()">📷 Cámara</button>
+    <button class="des" onclick="desmarcar()">Desmarcar</button>
+    <button class="clear" onclick="limpiar()">Limpiar</button>
   </div>
 
-  <script>
-    const TOTAL_CARTONES = 4;
-    const cartonesDiv = document.getElementById('cartones');
+  <video id="video" autoplay playsinline></video>
+  <canvas id="canvas" hidden></canvas>
 
-    // Crear cartones
-    for(let c=1;c<=TOTAL_CARTONES;c++){
-      const carton = document.createElement('div');
-      carton.className='carton';
-      carton.innerHTML = `<h3>Cartón ${c}</h3><div class="grid"></div>`;
-      const grid = carton.querySelector('.grid');
+  <div id="cartones"></div>
+</div>
 
-      // 25 espacios por cartón
-      for(let i=0;i<25;i++){
-        const cell = document.createElement('div');
-        cell.className='cell';
-        cell.contentEditable = true;
-        cell.inputMode = 'numeric';
-        cell.addEventListener('click',()=>{
-          cell.classList.toggle('marked');
-        });
-        grid.appendChild(cell);
-      }
-      cartonesDiv.appendChild(carton);
-    }
+<script>
+const cartonesDiv = document.getElementById("cartones");
 
-    function marcarNumero(){
-      const n = document.getElementById('num').value.trim();
-      if(!n) return;
+// crear 4 cartones
+for(let c=1;c<=4;c++){
+  const d=document.createElement("div");
+  d.className="carton";
+  d.innerHTML=`<h3>Cartón ${c}</h3><div class='grid'></div>`;
+  const g=d.querySelector(".grid");
+  for(let i=0;i<25;i++){
+    const cell=document.createElement("div");
+    cell.className="cell";
+    cell.contentEditable=true;
+    cell.onclick=()=>cell.classList.toggle("marked");
+    g.appendChild(cell);
+  }
+  cartonesDiv.appendChild(d);
+}
 
-      document.querySelectorAll('.cell').forEach(cell=>{
-        if(cell.innerText.trim() === n){
-          cell.classList.add('marked');
-        }
-      });
-      document.getElementById('num').value='';
-    }
+// cámara
+const video=document.getElementById("video");
+navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}})
+.then(s=>video.srcObject=s);
 
-    function desmarcarTodo(){
-      document.querySelectorAll('.cell').forEach(cell=>{
-        cell.classList.remove('marked');
-      });
-    }
+// marcar número
+function marcar(){
+  const n=document.getElementById("num").value.trim();
+  if(!n) return;
+  document.querySelectorAll(".cell").forEach(c=>{
+    if(c.innerText.trim()===n) c.classList.add("marked");
+  });
+  document.getElementById("num").value="";
+}
 
-    function limpiarTodo(){
-      if(!confirm('¿Limpiar todos los cartones?')) return;
-      document.querySelectorAll('.cell').forEach(cell=>{
-        cell.classList.remove('marked');
-        cell.innerText='';
-      });
-    }
-  </script>
+// OCR
+async function capturar(){
+  const canvas=document.getElementById("canvas");
+  canvas.width=video.videoWidth;
+  canvas.height=video.videoHeight;
+  canvas.getContext("2d").drawImage(video,0,0);
 
+  const r=await Tesseract.recognize(canvas,"eng");
+  const nums=r.data.text.match(/\b\d{1,2}\b/g);
+  if(nums){
+    nums.forEach(n=>{
+      document.getElementById("num").value=n;
+      marcar();
+    });
+  }else alert("No se detectó número");
+}
+
+function desmarcar(){
+  document.querySelectorAll(".cell").forEach(c=>c.classList.remove("marked"));
+}
+function limpiar(){
+  if(confirm("¿Borrar todo?")){
+    document.querySelectorAll(".cell").forEach(c=>{
+      c.classList.remove("marked");
+      c.innerText="";
+    });
+  }
+}
+</script>
 </body>
 </html>
