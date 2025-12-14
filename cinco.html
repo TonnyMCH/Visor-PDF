@@ -2,9 +2,9 @@
 
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bingo móvil – 4 cartones</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bingo Móvil - 4 Cartones</title>
   <style>
     body{
       margin:0; font-family:system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
@@ -15,31 +15,44 @@
       font-size:18px; font-weight:600;
     }
     .container{ padding:10px; }
-    .controls{ display:flex; gap:8px; margin-bottom:12px; }
+    .controls{
+      display:flex; gap:8px; margin-bottom:12px;
+    }
     input[type=number]{
       flex:1; padding:10px; font-size:18px; border-radius:10px; border:none;
+      outline:none;
     }
     button{
       padding:10px 14px; font-size:16px; border-radius:10px; border:none;
-      font-weight:600; cursor:pointer;
+      background:#22c55e; color:#052e16; font-weight:600;
     }
-    button.mark{ background:#22c55e; color:#052e16; }
+    button.desmarcar{ background:#38bdf8; color:#082f49; }
     button.clear{ background:#ef4444; color:#450a0a; }
 
 ```
-.cartones{ display:grid; grid-template-columns:1fr; gap:14px; }
-.carton{ background:#020617; border-radius:14px; padding:10px; }
-.carton h3{ margin:6px 0 8px; text-align:center; }
+.cartones{
+  display:grid; grid-template-columns:1fr; gap:14px;
+}
 
-.grid{ display:grid; grid-template-columns:repeat(5, 1fr); gap:6px; }
+.carton{
+  background:#020617; border-radius:14px; padding:10px;
+}
+.carton h3{ margin:4px 0 8px; text-align:center; }
+
+.grid{
+  display:grid; grid-template-columns:repeat(5, 1fr); gap:6px;
+}
 .cell{
   background:#1e293b; border-radius:8px; text-align:center;
   padding:10px 0; font-size:16px; cursor:pointer; user-select:none;
-  min-height:36px;
 }
-.cell.marked{ background:#22c55e; color:#052e16; font-weight:700; }
+.cell.marked{
+  background:#22c55e; color:#052e16; font-weight:700;
+}
 
-footer{ text-align:center; font-size:12px; opacity:.7; margin-top:12px; }
+footer{
+  text-align:center; font-size:12px; opacity:.7; margin-top:12px;
+}
 ```
 
   </style>
@@ -49,143 +62,72 @@ footer{ text-align:center; font-size:12px; opacity:.7; margin-top:12px; }
 
   <div class="container">
     <div class="controls">
-      <input type="number" id="num" placeholder="Número cantado" min="1" max="90" />
-      <button class="mark" id="btnMarcar">Marcar</button>
-      <button class="clear" id="btnLimpiar">Limpiar</button>
+      <input type="number" id="num" placeholder="Número cantado" min="1" max="90">
+      <button onclick="marcarNumero()">Marcar</button>
+      <button class="desmarcar" onclick="desmarcarTodo()">Desmarcar</button>
+      <button class="clear" onclick="limpiarTodo()">Limpiar</button>
     </div>
 
 ```
 <div class="cartones" id="cartones"></div>
 
-<div id="historial" style="background:#020617;border-radius:12px;padding:10px;margin-top:10px;">
-  <strong>📋 Números cantados</strong>
-  <div id="listaHistorial" style="margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;"></div>
-</div>
-
-<footer>Toca un número para marcar/desmarcar manualmente</footer>
+<footer>
+  Toca una casilla para marcar o desmarcar manualmente
+</footer>
 ```
 
   </div>
 
   <script>
     const TOTAL_CARTONES = 4;
-    const STORAGE_KEY = 'bingo_cartones_v1';
-    const STORAGE_HIST = 'bingo_historial_v1';
     const cartonesDiv = document.getElementById('cartones');
-    const inputNum = document.getElementById('num');
 
-    function loadHist(){
-      try{ return JSON.parse(localStorage.getItem(STORAGE_HIST) || '[]'); }
-      catch(e){ return []; }
-    }
+    // Crear cartones
+    for(let c=1;c<=TOTAL_CARTONES;c++){
+      const carton = document.createElement('div');
+      carton.className='carton';
+      carton.innerHTML = `<h3>Cartón ${c}</h3><div class="grid"></div>`;
+      const grid = carton.querySelector('.grid');
 
-    function saveHist(list){ localStorage.setItem(STORAGE_HIST, JSON.stringify(list)); }
-
-    function loadSaved(){
-      try{
-        return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-      }catch(e){
-        return [];
-      }
-    }
-
-    function saveAll(){
-      const data = [];
-      document.querySelectorAll('.carton').forEach(carton=>{
-        const cells = [];
-        carton.querySelectorAll('.cell').forEach(cell=>{
-          cells.push({ value: cell.innerText.trim(), marked: cell.classList.contains('marked') });
+      // 25 espacios por cartón
+      for(let i=0;i<25;i++){
+        const cell = document.createElement('div');
+        cell.className='cell';
+        cell.contentEditable = true;
+        cell.inputMode = 'numeric';
+        cell.addEventListener('click',()=>{
+          cell.classList.toggle('marked');
         });
-        data.push(cells);
-      });
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    }
-
-    function build(){
-      cartonesDiv.innerHTML = '';
-      const saved = loadSaved();
-
-      for(let c=1;c<=TOTAL_CARTONES;c++){
-        const carton = document.createElement('div');
-        carton.className = 'carton';
-        const title = document.createElement('h3');
-        title.textContent = `Cartón ${c}`;
-        const grid = document.createElement('div');
-        grid.className = 'grid';
-
-        for(let i=0;i<25;i++){
-          const cell = document.createElement('div');
-          cell.className = 'cell';
-          cell.contentEditable = true;
-          cell.inputMode = 'numeric';
-
-          if(saved[c-1] && saved[c-1][i]){
-            cell.innerText = saved[c-1][i].value || '';
-            if(saved[c-1][i].marked) cell.classList.add('marked');
-          }
-
-          cell.addEventListener('click', ()=>{ cell.classList.toggle('marked'); saveAll(); });
-          cell.addEventListener('input', saveAll);
-          grid.appendChild(cell);
-        }
-
-        carton.appendChild(title);
-        carton.appendChild(grid);
-        cartonesDiv.appendChild(carton);
+        grid.appendChild(cell);
       }
+      cartonesDiv.appendChild(carton);
     }
 
     function marcarNumero(){
-      const n = inputNum.value;
+      const n = document.getElementById('num').value.trim();
       if(!n) return;
 
       document.querySelectorAll('.cell').forEach(cell=>{
-        if(cell.innerText.trim() === n){ cell.classList.add('marked'); }
+        if(cell.innerText.trim() === n){
+          cell.classList.add('marked');
+        }
       });
+      document.getElementById('num').value='';
+    }
 
-      let hist = loadHist();
-      if(!hist.includes(n)){
-        hist.push(n);
-        saveHist(hist);
-        renderHist();
-      }
-
-      inputNum.value='';
-      saveAll();
+    function desmarcarTodo(){
+      document.querySelectorAll('.cell').forEach(cell=>{
+        cell.classList.remove('marked');
+      });
     }
 
     function limpiarTodo(){
       if(!confirm('¿Limpiar todos los cartones?')) return;
-      localStorage.removeItem(STORAGE_KEY);
-      localStorage.removeItem(STORAGE_HIST);
-      build();
-      renderHist();
-    }
-
-    function renderHist(){
-      const cont = document.getElementById('listaHistorial');
-      cont.innerHTML='';
-      loadHist().forEach(n=>{
-        const s = document.createElement('span');
-        s.textContent = n;
-        s.style.background = '#1e293b';
-        s.style.padding = '6px 10px';
-        s.style.borderRadius = '8px';
-        cont.appendChild(s);
+      document.querySelectorAll('.cell').forEach(cell=>{
+        cell.classList.remove('marked');
+        cell.innerText='';
       });
-    }(){
-      if(!confirm('¿Limpiar todos los cartones?')) return;
-      localStorage.removeItem(STORAGE_KEY);
-      build();
-    renderHist();
     }
-
-    document.getElementById('btnMarcar').addEventListener('click', marcarNumero);
-    document.getElementById('btnLimpiar').addEventListener('click', limpiarTodo);
-
-    // Construir al cargar
-    build();
-    renderHist();
   </script>
 
 </body>
