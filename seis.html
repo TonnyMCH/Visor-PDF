@@ -44,6 +44,7 @@
 
     .guardar { background: #4caf50; color: #000; }
     .exportar { background: #2196f3; color: #fff; }
+    .ordenar { background: #9c27b0; color: #fff; }
     .editar { background: #ffc107; color: #000; }
     .eliminar { background: #f44336; color: #fff; }
 
@@ -79,6 +80,7 @@
 </form>
 
 <div class="acciones">
+  <button class="ordenar" onclick="ordenarPorEdad()">🔽 Ordenar por edad (Mayor → Menor)</button>
   <button class="exportar" onclick="exportarJSON()">📤 Exportar JSON</button>
   <input type="file" id="importar" accept=".json">
 </div>
@@ -88,9 +90,7 @@
 
 <script>
   const lista = document.getElementById("lista");
-  const form = document.getElementById("form");
   const titulo = document.getElementById("titulo");
-  const inputImportar = document.getElementById("importar");
 
   function calcularEdad(fecha) {
     const hoy = new Date();
@@ -140,9 +140,8 @@
       nacimiento: nacimiento.value
     };
 
-    if (i === "") {
-      personas.push(persona);
-    } else {
+    if (i === "") personas.push(persona);
+    else {
       personas[i] = persona;
       titulo.textContent = "Agregar Persona";
     }
@@ -171,6 +170,15 @@
     cargarPersonas();
   }
 
+  function ordenarPorEdad() {
+    const personas = obtenerPersonas();
+    personas.sort((a, b) =>
+      calcularEdad(b.nacimiento) - calcularEdad(a.nacimiento)
+    );
+    guardarPersonas(personas);
+    cargarPersonas();
+  }
+
   function exportarJSON() {
     const datos = JSON.stringify(obtenerPersonas(), null, 2);
     const blob = new Blob([datos], { type: "application/json" });
@@ -182,7 +190,7 @@
     URL.revokeObjectURL(url);
   }
 
-  inputImportar.addEventListener("change", e => {
+  importar.addEventListener("change", e => {
     const archivo = e.target.files[0];
     if (!archivo) return;
     const reader = new FileReader();
