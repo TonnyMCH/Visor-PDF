@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Personas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, Arial, sans-serif;
+      background: #111;
+      color: #fff;
+      padding: 15px;
+    }
+
+    h2 { text-align: center; }
+
+    form, .acciones {
+      background: #1e1e1e;
+      padding: 15px;
+      border-radius: 12px;
+      margin-bottom: 15px;
+    }
+
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin: 6px 0;
+      border-radius: 8px;
+      border: none;
+      font-size: 15px;
+    }
+
+    input {
+      background: #2a2a2a;
+      color: #fff;
+    }
+
+    button {
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .guardar { background: #4caf50; color: #000; }
+    .exportar { background: #2196f3; color: #fff; }
+    .editar { background: #ffc107; color: #000; }
+    .eliminar { background: #f44336; color: #fff; }
+
+    .card {
+      background: #1e1e1e;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+
+    .acciones-card {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    span {
+      color: #4caf50;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<h2 id="titulo">Agregar Persona</h2>
+
+<form id="form">
+  <input type="hidden" id="index">
+  <input type="text" id="id" placeholder="ID" required>
+  <input type="text" id="nombre" placeholder="Nombre" required>
+  <input type="date" id="nacimiento" required>
+  <button class="guardar" type="submit">Guardar</button>
+</form>
+
+<div class="acciones">
+  <button class="exportar" onclick="exportarJSON()">📤 Exportar JSON</button>
+  <input type="file" id="importar" accept=".json">
+</div>
+
+<h2>Lista</h2>
+<div id="lista"></div>
+
+<script>
+  const lista = document.getElementById("lista");
+  const form = document.getElementById("form");
+  const titulo = document.getElementById("titulo");
+  const inputImportar = document.getElementById("importar");
+
+  function calcularEdad(fecha) {
+    const hoy = new Date();
+    const nac = new Date(fecha);
+    let edad = hoy.getFullYear() - nac.getFullYear();
+    const m = hoy.getMonth() - nac.getMonth();
+    if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad--;
+    return edad;
+  }
+
+  function obtenerPersonas() {
+    return JSON.parse(localStorage.getItem("personas")) || [];
+  }
+
+  function guardarPersonas(p) {
+    localStorage.setItem("personas", JSON.stringify(p));
+  }
+
+  function cargarPersonas() {
+    lista.innerHTML = "";
+    obtenerPersonas().forEach((p, i) => {
+      const edad = calcularEdad(p.nacimiento);
+      const div = document.createElement("div");
+      div.className = "card";
+      div.innerHTML = `
+        <p>ID: <span>${p.id}</span></p>
+        <p>Nombre: <span>${p.nombre}</span></p>
+        <p>Nacimiento: <span>${p.nacimiento}</span></p>
+        <p>Edad: <span>${edad}</span> años</p>
+        <div class="acciones-card">
+          <button class="editar" onclick="editar(${i})">✏️ Editar</button>
+          <button class="eliminar" onclick="eliminar(${i})">🗑️ Eliminar</button>
+        </div>
+      `;
+      lista.appendChild(div);
+    });
+  }
+
+  form.addEventListener("submit", e => {
+    e.preventDefault();
+    const personas = obtenerPersonas();
+    const i = index.value;
+
+    const persona = {
+      id: id.value.trim(),
+      nombre: nombre.value.trim(),
+      nacimiento: nacimiento.value
+    };
+
+    if (i === "") {
+      personas.push(persona);
+    } else {
+      personas[i] = persona;
+      titulo.textContent = "Agregar Persona";
+    }
+
+    guardarPersonas(personas);
+    form.reset();
+    index.value = "";
+    cargarPersonas();
+  });
+
+  function editar(i) {
+    const p = obtenerPersonas()[i];
+    index.value = i;
+    id.value = p.id;
+    nombre.value = p.nombre;
+    nacimiento.value = p.nacimiento;
+    titulo.textContent = "Editar Persona";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function eliminar(i) {
+    if (!confirm("¿Eliminar esta persona?")) return;
+    const personas = obtenerPersonas();
+    personas.splice(i, 1);
+    guardarPersonas(personas);
+    cargarPersonas();
+  }
+
+  function exportarJSON() {
+    const datos = JSON.stringify(obtenerPersonas(), null, 2);
+    const blob = new Blob([datos], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "personas.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  inputImportar.addEventListener("change", e => {
+    const archivo = e.target.files[0];
+    if (!archivo) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const datos = JSON.parse(e.target.result);
+        if (!Array.isArray(datos)) throw 0;
+        guardarPersonas(datos);
+        cargarPersonas();
+        alert("JSON importado correctamente");
+      } catch {
+        alert("Archivo JSON no válido");
+      }
+    };
+    reader.readAsText(archivo);
+  });
+
+  cargarPersonas();
+</script>
+
+</body>
+</html>
