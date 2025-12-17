@@ -1,134 +1,229 @@
 <!DOCTYPE html>
-
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bingo Móvil - 4 Cartones</title>
+
   <style>
     body{
-      margin:0; font-family:system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      background:#0f172a; color:#e5e7eb;
+      margin:0;
+      font-family:system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background:#0f172a;
+      color:#e5e7eb;
     }
     header{
-      padding:12px; text-align:center; background:#020617;
-      font-size:18px; font-weight:600;
+      padding:12px;
+      text-align:center;
+      background:#020617;
+      font-size:18px;
+      font-weight:600;
     }
     .container{ padding:10px; }
+
     .controls{
-      display:flex; gap:8px; margin-bottom:12px;
+      display:flex;
+      gap:6px;
+      margin-bottom:12px;
+      flex-wrap:wrap;
     }
     input[type=number]{
-      flex:1; padding:10px; font-size:18px; border-radius:10px; border:none;
+      flex:1;
+      padding:10px;
+      font-size:18px;
+      border-radius:10px;
+      border:none;
       outline:none;
     }
     button{
-      padding:10px 14px; font-size:16px; border-radius:10px; border:none;
-      background:#22c55e; color:#052e16; font-weight:600;
+      padding:10px 12px;
+      font-size:15px;
+      border-radius:10px;
+      border:none;
+      font-weight:600;
+      cursor:pointer;
     }
-    button.desmarcar{ background:#38bdf8; color:#082f49; }
-    button.clear{ background:#ef4444; color:#450a0a; }
+    .marcar{ background:#22c55e; color:#052e16; }
+    .desmarcar{ background:#38bdf8; color:#082f49; }
+    .clear{ background:#ef4444; color:#450a0a; }
 
-```
-.cartones{
-  display:grid; grid-template-columns:1fr; gap:14px;
-}
-
-.carton{
-  background:#020617; border-radius:14px; padding:10px;
-}
-.carton h3{ margin:4px 0 8px; text-align:center; }
-
-.grid{
-  display:grid; grid-template-columns:repeat(5, 1fr); gap:6px;
-}
-.cell{
-  background:#1e293b; border-radius:8px; text-align:center;
-  padding:10px 0; font-size:16px; cursor:pointer; user-select:none;
-}
-.cell.marked{
-  background:#22c55e; color:#052e16; font-weight:700;
-}
-
-footer{
-  text-align:center; font-size:12px; opacity:.7; margin-top:12px;
-}
-```
-
+    .cartones{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:14px;
+    }
+    .carton{
+      background:#020617;
+      border-radius:14px;
+      padding:10px;
+    }
+    .carton h3{
+      margin:4px 0 8px;
+      text-align:center;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(5, 1fr);
+      gap:6px;
+    }
+    .cell{
+      background:#1e293b;
+      border-radius:8px;
+      text-align:center;
+      padding:10px 0;
+      font-size:16px;
+      cursor:pointer;
+      user-select:none;
+    }
+    .cell.marked{
+      background:#22c55e;
+      color:#052e16;
+      font-weight:700;
+    }
+    footer{
+      text-align:center;
+      font-size:12px;
+      opacity:.7;
+      margin-top:12px;
+    }
   </style>
 </head>
+
 <body>
-  <header>🟢 Bingo móvil – 4 cartones</header>
+<header>🟢 Bingo móvil – 4 cartones</header>
 
-  <div class="container">
-    <div class="controls">
-      <input type="number" id="num" placeholder="Número cantado" min="1" max="90">
-      <button onclick="marcarNumero()">Marcar</button>
-      <button class="desmarcar" onclick="desmarcarTodo()">Desmarcar</button>
-      <button class="clear" onclick="limpiarTodo()">Limpiar</button>
-    </div>
+<div class="container">
 
-```
-<div class="cartones" id="cartones"></div>
-
-<footer>
-  Toca una casilla para marcar o desmarcar manualmente
-</footer>
-```
-
+  <div class="controls">
+    <input type="number" id="num" placeholder="Número cantado" min="1" max="90">
+    <button class="marcar" onclick="marcarNumero()">Marcar</button>
+    <button class="desmarcar" onclick="desmarcarTodo()">Desmarcar</button>
+    <button class="clear" onclick="limpiarTodo()">Limpiar</button>
+    <button class="clear" onclick="borrarLocal()">Borrar memoria</button>
   </div>
 
-  <script>
-    const TOTAL_CARTONES = 4;
-    const cartonesDiv = document.getElementById('cartones');
+  <div class="cartones" id="cartones"></div>
 
-    // Crear cartones
-    for(let c=1;c<=TOTAL_CARTONES;c++){
-      const carton = document.createElement('div');
-      carton.className='carton';
-      carton.innerHTML = `<h3>Cartón ${c}</h3><div class="grid"></div>`;
-      const grid = carton.querySelector('.grid');
+  <footer>
+    Toca una casilla para escribir · Toca otra vez para marcar
+  </footer>
 
-      // 25 espacios por cartón
-      for(let i=0;i<25;i++){
-        const cell = document.createElement('div');
-        cell.className='cell';
-        cell.contentEditable = true;
-        cell.inputMode = 'numeric';
-        cell.addEventListener('click',()=>{
-          cell.classList.toggle('marked');
-        });
-        grid.appendChild(cell);
+</div>
+
+<script>
+const TOTAL_CARTONES = 4;
+const STORAGE_KEY = "bingo_cartones_v1";
+const cartonesDiv = document.getElementById('cartones');
+
+/* CREAR CARTONES */
+for(let c=1;c<=TOTAL_CARTONES;c++){
+  const carton = document.createElement('div');
+  carton.className='carton';
+  carton.innerHTML = `<h3>Cartón ${c}</h3><div class="grid"></div>`;
+  const grid = carton.querySelector('.grid');
+
+  for(let i=0;i<25;i++){
+    const cell = document.createElement('div');
+    cell.className='cell';
+    cell.contentEditable = true;
+    cell.inputMode = 'numeric';
+
+    cell.addEventListener('click',()=>{
+      cell.classList.toggle('marked');
+      guardarLocal();
+    });
+
+    cell.addEventListener('input', guardarLocal);
+
+    grid.appendChild(cell);
+  }
+  cartonesDiv.appendChild(carton);
+}
+
+/* MARCAR POR NÚMERO */
+function marcarNumero(){
+  const n = document.getElementById('num').value.trim();
+  if(!n) return;
+
+  document.querySelectorAll('.cell').forEach(cell=>{
+    if(cell.innerText.trim() === n){
+      cell.classList.add('marked');
+    }
+  });
+
+  document.getElementById('num').value='';
+  guardarLocal();
+}
+
+/* DESMARCAR TODO */
+function desmarcarTodo(){
+  document.querySelectorAll('.cell').forEach(cell=>{
+    cell.classList.remove('marked');
+  });
+  guardarLocal();
+}
+
+/* LIMPIAR TODO */
+function limpiarTodo(){
+  if(!confirm('¿Limpiar todos los cartones?')) return;
+
+  document.querySelectorAll('.cell').forEach(cell=>{
+    cell.classList.remove('marked');
+    cell.innerText='';
+  });
+  guardarLocal();
+}
+
+/* ===== LOCALSTORAGE ===== */
+function guardarLocal(){
+  const data = [];
+
+  document.querySelectorAll('.carton').forEach(carton=>{
+    const cells = carton.querySelectorAll('.cell');
+    const cartonData = [];
+
+    cells.forEach(cell=>{
+      cartonData.push({
+        valor: cell.innerText.trim(),
+        marcado: cell.classList.contains('marked')
+      });
+    });
+
+    data.push(cartonData);
+  });
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function cargarLocal(){
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if(!raw) return;
+
+  const data = JSON.parse(raw);
+
+  document.querySelectorAll('.carton').forEach((carton, cIndex)=>{
+    const cells = carton.querySelectorAll('.cell');
+    const cartonData = data[cIndex] || [];
+
+    cells.forEach((cell, i)=>{
+      if(cartonData[i]){
+        cell.innerText = cartonData[i].valor;
+        cell.classList.toggle('marked', cartonData[i].marcado);
       }
-      cartonesDiv.appendChild(carton);
-    }
+    });
+  });
+}
 
-    function marcarNumero(){
-      const n = document.getElementById('num').value.trim();
-      if(!n) return;
+function borrarLocal(){
+  if(confirm("¿Borrar cartones guardados?")){
+    localStorage.removeItem(STORAGE_KEY);
+    location.reload();
+  }
+}
 
-      document.querySelectorAll('.cell').forEach(cell=>{
-        if(cell.innerText.trim() === n){
-          cell.classList.add('marked');
-        }
-      });
-      document.getElementById('num').value='';
-    }
-
-    function desmarcarTodo(){
-      document.querySelectorAll('.cell').forEach(cell=>{
-        cell.classList.remove('marked');
-      });
-    }
-
-    function limpiarTodo(){
-      if(!confirm('¿Limpiar todos los cartones?')) return;
-      document.querySelectorAll('.cell').forEach(cell=>{
-        cell.classList.remove('marked');
-        cell.innerText='';
-      });
-    }
-  </script>
+/* CARGAR AL INICIAR */
+window.addEventListener('load', cargarLocal);
+</script>
 
 </body>
 </html>
