@@ -1,203 +1,206 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-    <meta name="theme-color" content="#111111" />
-    <title>PDF</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0f0f12">
+<title>PDF Tools</title>
 
-    <link rel="manifest" href="manifest.json" />
-    <link rel="icon" href="imagenes/icon.png" />
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="imagenes/icon.png">
 
-    <style>
-        /* ------------------------------ */
-        /* MODO OSCURO (default) */
-        /* ------------------------------ */
-        :root {
-            --bg: #111;
-            --card: #1c1c1c;
-            --border: #2a2a2a;
-            --radius: 18px;
-            --shadow: 0 6px 16px rgba(0,0,0,0.45);
-            --shadow-hover: 0 12px 30px rgba(0,0,0,0.55);
-            --shadow-pressed: 0 3px 8px rgba(0,0,0,0.35);
-            --text: #f0f0f0;
-            --text-secondary: #bbb;
-        }
+<style>
+/* =========================
+   VARIABLES
+========================= */
+:root{
+  --bg:#0f0f12;
+  --card:#1a1b20;
+  --border:#26272e;
+  --accent:#4c8bf5;
+  --radius:20px;
+  --text:#f1f1f1;
+  --muted:#a0a0a8;
+  --shadow:0 10px 25px rgba(0,0,0,.45);
+}
 
-        /* ------------------------------ */
-        /* MODO CLARO AUTOMÁTICO */
-        /* ------------------------------ */
-        @media (prefers-color-scheme: light) {
-            :root {
-                --bg: #f1f1f1;
-                --card: #fff;
-                --border: #ddd;
-                --shadow: 0 4px 14px rgba(0,0,0,0.12);
-                --shadow-hover: 0 12px 30px rgba(0,0,0,0.20);
-                --shadow-pressed: 0 3px 8px rgba(0,0,0,0.10);
-                --text: #111;
-                --text-secondary: #444;
-            }
-        }
+/* MODO CLARO */
+@media(prefers-color-scheme:light){
+  :root{
+    --bg:#f4f5f7;
+    --card:#ffffff;
+    --border:#e1e2e8;
+    --text:#121212;
+    --muted:#555;
+    --shadow:0 8px 18px rgba(0,0,0,.15);
+  }
+}
 
-        /* ------------------------------ */
-        /* GENERAL */
-        /* ------------------------------ */
-        body {
-            margin: 0;
-            padding: 18px;
-            background: var(--bg);
-            font-family: Arial, sans-serif;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            justify-content: center;
-            gap: 22px;
-            color: var(--text);
-        }
+/* =========================
+   BODY
+========================= */
+body{
+  margin:0;
+  padding:16px;
+  background:var(--bg);
+  font-family:system-ui,-apple-system,BlinkMacSystemFont;
+  color:var(--text);
 
-        a {
-            width: 100%;
-            text-decoration: none;
-            color: inherit;
-        }
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:16px;
+}
 
-        /* ------------------------------ */
-        /* TARJETAS TIPO BOTÓN */
-        /* ------------------------------ */
-        .item {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 18px;
-            height: 190px;
+/* =========================
+   TARJETAS
+========================= */
+a{
+  text-decoration:none;
+  color:inherit;
+}
 
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+.item{
+  background:linear-gradient(145deg,var(--card),rgba(255,255,255,.02));
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:18px;
+  height:170px;
 
-            box-shadow: var(--shadow);
-            transition: 
-                transform 0.15s ease,
-                box-shadow 0.20s ease;
-        }
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
 
-        @media (hover: hover) {
-            .item:hover {
-                transform: translateY(-6px);
-                box-shadow: var(--shadow-hover);
-            }
-        }
+  box-shadow:var(--shadow);
+  transition:.2s ease;
+  position:relative;
+  overflow:hidden;
+}
 
-        /* ------------------------------ */
-        /* PRESIÓN (push button en mobile) */
-        /* ------------------------------ */
-        .item:active {
-            transform: scale(0.96);
-            box-shadow: var(--shadow-pressed);
-        }
+/* EFECTO LUZ */
+.item::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:radial-gradient(circle at top,
+      rgba(255,255,255,.15),
+      transparent 60%);
+  opacity:.4;
+}
 
-        /* ------------------------------ */
-        /* IMÁGENES / SVG con animación */
-        /* ------------------------------ */
-        .item img {
-            width: 70%;
-            height: auto;
-            border-radius: var(--radius);
-            opacity: 0;
-            transform: scale(0.92);
-            animation: fadeIn 0.5s ease-out forwards;
+/* PRESIÓN */
+.item:active{
+  transform:scale(.96);
+}
 
-            user-select: none;
-            -webkit-user-drag: none;
-            pointer-events: none;
-        }
+/* =========================
+   ICONOS
+========================= */
+.item img{
+  width:64px;
+  height:64px;
+  object-fit:contain;
+  margin-bottom:12px;
+  animation:pop .45s ease;
+  pointer-events:none;
+}
 
-        @keyframes fadeIn {
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
+@keyframes pop{
+  from{opacity:0; transform:scale(.85)}
+  to{opacity:1; transform:scale(1)}
+}
 
-        /* ------------------------------ */
-        /* TEXTO BAJO LA IMAGEN */
-        /* ------------------------------ */
-        .texto {
-            margin-top: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            text-align: center;
-            color: var(--text-secondary);
-        }
+/* =========================
+   TEXTO
+========================= */
+.texto{
+  font-size:15px;
+  font-weight:600;
+  text-align:center;
+  color:var(--text);
+}
 
-    </style>
+.sub{
+  font-size:12px;
+  color:var(--muted);
+  margin-top:2px;
+}
+
+/* =========================
+   RESPONSIVE TABLET
+========================= */
+@media(min-width:600px){
+  body{
+    grid-template-columns:repeat(3,1fr);
+  }
+}
+</style>
 </head>
+
 <body>
 
-    <!-- TARJETAS CON TEXTO -->
-    <a data-id="enlace1" class="item">
-        <img src="imagenes/imagen1.png" alt="Enlace 1" />
-        <span class="texto">Sellar PDF</span>
-    </a>
+<a data-id="enlace1" class="item">
+  <img src="imagenes/imagen1.png">
+  <div class="texto">Sellar PDF</div>
+  <div class="sub">Firma y sello</div>
+</a>
 
-    <a data-id="enlace2" class="item">
-        <img src="imagenes/imagen2.png" alt="Enlace 2" />
-        <span class="texto">Unificar PDF</span>
-    </a>
+<a data-id="enlace2" class="item">
+  <img src="imagenes/imagen2.png">
+  <div class="texto">Unificar PDF</div>
+  <div class="sub">Combinar archivos</div>
+</a>
 
-    <a data-id="enlace3" class="item">
-        <img src="imagenes/imagen3.png" alt="Enlace 3" />
-        <span class="texto">Texto a PDF</span>
-    </a>
+<a data-id="enlace3" class="item">
+  <img src="imagenes/imagen3.png">
+  <div class="texto">Texto a PDF</div>
+  <div class="sub">Crear documentos</div>
+</a>
 
-    <a data-id="enlace4" class="item">
-        <img src="imagenes/imagen4.png" alt="Enlace 4" />
-        <span class="texto">Recortar a Circulo png</span>
-    </a>
+<a data-id="enlace4" class="item">
+  <img src="imagenes/imagen4.png">
+  <div class="texto">Recorte PNG</div>
+  <div class="sub">Forma circular</div>
+</a>
 
-    <a data-id="enlace5" class="item">
-        <img src="imagenes/imagen5.png" alt="Enlace 5" />
-        <span class="texto">Bingo</span>
-    </a>
+<a data-id="enlace5" class="item">
+  <img src="imagenes/imagen5.png">
+  <div class="texto">Bingo</div>
+  <div class="sub">Cartones móviles</div>
+</a>
 
-    <a data-id="enlace6" class="item">
-        <img src="imagenes/imagen6.png" alt="Enlace 6" />
-        <span class="texto">Edades</span>
-    </a>
+<a data-id="enlace6" class="item">
+  <img src="imagenes/imagen6.png">
+  <div class="texto">Edades</div>
+  <div class="sub">Cálculo automático</div>
+</a>
 
-    <!-- VIBRACIÓN (HAPTIC FEEDBACK) -->
-    <script>
-        document.querySelectorAll('.item').forEach(btn => {
-            btn.addEventListener('touchstart', () => {
-                if (navigator.vibrate) navigator.vibrate(20);
-            });
-        });
-    </script>
+<!-- VIBRACIÓN -->
+<script>
+document.querySelectorAll('.item').forEach(i=>{
+  i.addEventListener('touchstart',()=>{
+    if(navigator.vibrate) navigator.vibrate(18);
+  });
+});
+</script>
 
-    <!-- Service Worker -->
-    <script>
-        if ("serviceWorker" in navigator) {
-            navigator.serviceWorker.register("service-worker.js")
-                .then(() => console.log("Service Worker registrado"))
-                .catch(err => console.error("Error registrando SW:", err));
-        }
-    </script>
+<!-- SERVICE WORKER -->
+<script>
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("service-worker.js");
+}
+</script>
 
-    <!-- Enlaces dinámicos -->
-    <script src="enlaces.js"></script>
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const items = document.querySelectorAll("a[data-id]");
-            items.forEach(a => {
-                const id = a.getAttribute("data-id");
-                if (typeof enlaces !== "undefined" && enlaces[id]) {
-                    a.href = enlaces[id];
-                }
-            });
-        });
-    </script>
+<!-- ENLACES DINÁMICOS -->
+<script src="enlaces.js"></script>
+<script>
+document.querySelectorAll('[data-id]').forEach(a=>{
+  const id=a.dataset.id;
+  if(typeof enlaces!=="undefined" && enlaces[id]){
+    a.href=enlaces[id];
+  }
+});
+</script>
 
 </body>
 </html>
