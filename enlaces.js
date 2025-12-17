@@ -4,4 +4,6 @@ const enlaces = {
     enlace3: "tres.html",
     enlace4: "cuatro.html",
     enlace5: "cinco.html",    
+    enlace6: "seis.html",    
+
 };
