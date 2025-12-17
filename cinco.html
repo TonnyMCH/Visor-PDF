@@ -80,6 +80,10 @@
       color:#052e16;
       font-weight:700;
     }
+    .cell.center{
+      font-size:20px;
+      cursor:default;
+    }
     footer{
       text-align:center;
       font-size:12px;
@@ -105,14 +109,14 @@
   <div class="cartones" id="cartones"></div>
 
   <footer>
-    Toca una casilla para escribir · Toca otra vez para marcar
+    Toca una casilla para escribir · Toca para marcar
   </footer>
 
 </div>
 
 <script>
 const TOTAL_CARTONES = 4;
-const STORAGE_KEY = "bingo_cartones_v1";
+const STORAGE_KEY = "bingo_cartones_v2";
 const cartonesDiv = document.getElementById('cartones');
 
 /* CREAR CARTONES */
@@ -125,15 +129,22 @@ for(let c=1;c<=TOTAL_CARTONES;c++){
   for(let i=0;i<25;i++){
     const cell = document.createElement('div');
     cell.className='cell';
-    cell.contentEditable = true;
-    cell.inputMode = 'numeric';
 
-    cell.addEventListener('click',()=>{
-      cell.classList.toggle('marked');
-      guardarLocal();
-    });
+    /* ⭐ CASILLA CENTRAL */
+    if(i === 12){
+      cell.innerText = '⭐';
+      cell.classList.add('marked','center');
+    } else {
+      cell.contentEditable = true;
+      cell.inputMode = 'numeric';
 
-    cell.addEventListener('input', guardarLocal);
+      cell.addEventListener('click',()=>{
+        cell.classList.toggle('marked');
+        guardarLocal();
+      });
+
+      cell.addEventListener('input', guardarLocal);
+    }
 
     grid.appendChild(cell);
   }
@@ -155,21 +166,28 @@ function marcarNumero(){
   guardarLocal();
 }
 
-/* DESMARCAR TODO */
+/* DESMARCAR TODO (excepto ⭐) */
 function desmarcarTodo(){
-  document.querySelectorAll('.cell').forEach(cell=>{
-    cell.classList.remove('marked');
+  document.querySelectorAll('.cell').forEach((cell, i)=>{
+    if(i % 25 !== 12){
+      cell.classList.remove('marked');
+    }
   });
   guardarLocal();
 }
 
-/* LIMPIAR TODO */
+/* LIMPIAR TODO (mantiene ⭐) */
 function limpiarTodo(){
   if(!confirm('¿Limpiar todos los cartones?')) return;
 
-  document.querySelectorAll('.cell').forEach(cell=>{
-    cell.classList.remove('marked');
-    cell.innerText='';
+  document.querySelectorAll('.cell').forEach((cell, i)=>{
+    if(i % 25 === 12){
+      cell.innerText = '⭐';
+      cell.classList.add('marked','center');
+    } else {
+      cell.innerText = '';
+      cell.classList.remove('marked');
+    }
   });
   guardarLocal();
 }
@@ -206,7 +224,10 @@ function cargarLocal(){
     const cartonData = data[cIndex] || [];
 
     cells.forEach((cell, i)=>{
-      if(cartonData[i]){
+      if(i % 25 === 12){
+        cell.innerText = '⭐';
+        cell.classList.add('marked','center');
+      } else if(cartonData[i]){
         cell.innerText = cartonData[i].valor;
         cell.classList.toggle('marked', cartonData[i].marcado);
       }
