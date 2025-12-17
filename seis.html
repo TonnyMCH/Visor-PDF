@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Personas</title>
+  <title>Personas y Grupos</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
@@ -14,16 +14,16 @@
       padding: 15px;
     }
 
-    h2 { text-align: center; }
+    h2, h3 { text-align: center; }
 
-    form, .acciones {
+    form, .acciones, .grupos-box {
       background: #1e1e1e;
       padding: 15px;
       border-radius: 12px;
       margin-bottom: 15px;
     }
 
-    input, button {
+    input, select, button {
       width: 100%;
       padding: 10px;
       margin: 6px 0;
@@ -32,21 +32,31 @@
       font-size: 15px;
     }
 
-    input {
+    input, select {
       background: #2a2a2a;
       color: #fff;
     }
 
-    button {
-      font-weight: bold;
-      cursor: pointer;
-    }
+    button { font-weight: bold; cursor: pointer; }
 
     .guardar { background: #4caf50; color: #000; }
-    .exportar { background: #2196f3; color: #fff; }
+    .grupo-btn { background: #03a9f4; color: #000; }
     .ordenar { background: #9c27b0; color: #fff; }
+    .exportar { background: #2196f3; color: #fff; }
     .editar { background: #ffc107; color: #000; }
     .eliminar { background: #f44336; color: #fff; }
+
+    .grupo {
+      margin-bottom: 20px;
+      border-top: 2px solid #333;
+      padding-top: 10px;
+    }
+
+    .grupo-titulo {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
 
     .card {
       background: #1e1e1e;
@@ -73,11 +83,21 @@
 
 <form id="form">
   <input type="hidden" id="index">
+
   <input type="text" id="id" placeholder="ID" required>
   <input type="text" id="nombre" placeholder="Nombre" required>
   <input type="date" id="nacimiento" required>
+
+  <select id="grupo" required></select>
+
   <button class="guardar" type="submit">Guardar</button>
 </form>
+
+<div class="grupos-box">
+  <h3>Crear grupo personalizado</h3>
+  <input type="text" id="nuevoGrupo" placeholder="Ej: Primos, Trabajo, Vecinos">
+  <button class="grupo-btn" onclick="agregarGrupo()">➕ Agregar grupo</button>
+</div>
 
 <div class="acciones">
   <button class="ordenar" onclick="ordenarPorEdad()">🔽 Ordenar por edad (Mayor → Menor)</button>
@@ -85,11 +105,12 @@
   <input type="file" id="importar" accept=".json">
 </div>
 
-<h2>Lista</h2>
+<h2>Personas por grupo</h2>
 <div id="lista"></div>
 
 <script>
   const lista = document.getElementById("lista");
+  const selectGrupo = document.getElementById("grupo");
   const titulo = document.getElementById("titulo");
 
   function calcularEdad(fecha) {
@@ -105,27 +126,72 @@
     return JSON.parse(localStorage.getItem("personas")) || [];
   }
 
+  function obtenerGrupos() {
+    return JSON.parse(localStorage.getItem("grupos")) || ["Amigos"];
+  }
+
   function guardarPersonas(p) {
     localStorage.setItem("personas", JSON.stringify(p));
   }
 
+  function guardarGrupos(g) {
+    localStorage.setItem("grupos", JSON.stringify(g));
+    cargarSelectGrupos();
+  }
+
+  function cargarSelectGrupos() {
+    selectGrupo.innerHTML = `<option value="">Seleccionar grupo</option>`;
+    obtenerGrupos().forEach(g => {
+      const opt = document.createElement("option");
+      opt.textContent = g;
+      opt.value = g;
+      selectGrupo.appendChild(opt);
+    });
+  }
+
+  function agregarGrupo() {
+    const nombre = nuevoGrupo.value.trim();
+    if (!nombre) return alert("Escribe un nombre de grupo");
+
+    const grupos = obtenerGrupos();
+    if (grupos.includes(nombre)) return alert("El grupo ya existe");
+
+    grupos.push(nombre);
+    guardarGrupos(grupos);
+    nuevoGrupo.value = "";
+  }
+
   function cargarPersonas() {
     lista.innerHTML = "";
-    obtenerPersonas().forEach((p, i) => {
-      const edad = calcularEdad(p.nacimiento);
-      const div = document.createElement("div");
-      div.className = "card";
-      div.innerHTML = `
-        <p>ID: <span>${p.id}</span></p>
-        <p>Nombre: <span>${p.nombre}</span></p>
-        <p>Nacimiento: <span>${p.nacimiento}</span></p>
-        <p>Edad: <span>${edad}</span> años</p>
-        <div class="acciones-card">
-          <button class="editar" onclick="editar(${i})">✏️ Editar</button>
-          <button class="eliminar" onclick="eliminar(${i})">🗑️ Eliminar</button>
-        </div>
-      `;
-      lista.appendChild(div);
+    const personas = obtenerPersonas();
+    const grupos = obtenerGrupos();
+
+    grupos.forEach(g => {
+      const miembros = personas.filter(p => p.grupo === g);
+      if (!miembros.length) return;
+
+      const cont = document.createElement("div");
+      cont.className = "grupo";
+      cont.innerHTML = `<h3>${g}</h3>`;
+
+      miembros.forEach(p => {
+        const edad = calcularEdad(p.nacimiento);
+        const div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `
+          <p>ID: <span>${p.id}</span></p>
+          <p>Nombre: <span>${p.nombre}</span></p>
+          <p>Nacimiento: <span>${p.nacimiento}</span></p>
+          <p>Edad: <span>${edad}</span> años</p>
+          <div class="acciones-card">
+            <button class="editar" onclick="editar('${p.id}')">✏️ Editar</button>
+            <button class="eliminar" onclick="eliminar('${p.id}')">🗑️ Eliminar</button>
+          </div>
+        `;
+        cont.appendChild(div);
+      });
+
+      lista.appendChild(cont);
     });
   }
 
@@ -137,7 +203,8 @@
     const persona = {
       id: id.value.trim(),
       nombre: nombre.value.trim(),
-      nacimiento: nacimiento.value
+      nacimiento: nacimiento.value,
+      grupo: grupo.value
     };
 
     if (i === "") personas.push(persona);
@@ -152,20 +219,23 @@
     cargarPersonas();
   });
 
-  function editar(i) {
-    const p = obtenerPersonas()[i];
+  function editar(idBuscar) {
+    const personas = obtenerPersonas();
+    const i = personas.findIndex(p => p.id === idBuscar);
+    const p = personas[i];
+
     index.value = i;
     id.value = p.id;
     nombre.value = p.nombre;
     nacimiento.value = p.nacimiento;
+    grupo.value = p.grupo;
     titulo.textContent = "Editar Persona";
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  function eliminar(i) {
+  function eliminar(idBuscar) {
     if (!confirm("¿Eliminar esta persona?")) return;
-    const personas = obtenerPersonas();
-    personas.splice(i, 1);
+    let personas = obtenerPersonas().filter(p => p.id !== idBuscar);
     guardarPersonas(personas);
     cargarPersonas();
   }
@@ -180,12 +250,16 @@
   }
 
   function exportarJSON() {
-    const datos = JSON.stringify(obtenerPersonas(), null, 2);
+    const datos = JSON.stringify({
+      grupos: obtenerGrupos(),
+      personas: obtenerPersonas()
+    }, null, 2);
+
     const blob = new Blob([datos], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "personas.json";
+    a.download = "personas_grupos.json";
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -193,21 +267,24 @@
   importar.addEventListener("change", e => {
     const archivo = e.target.files[0];
     if (!archivo) return;
+
     const reader = new FileReader();
     reader.onload = e => {
       try {
-        const datos = JSON.parse(e.target.result);
-        if (!Array.isArray(datos)) throw 0;
-        guardarPersonas(datos);
+        const data = JSON.parse(e.target.result);
+        if (!data.personas || !data.grupos) throw 0;
+        guardarPersonas(data.personas);
+        guardarGrupos(data.grupos);
         cargarPersonas();
-        alert("JSON importado correctamente");
+        alert("Datos importados correctamente");
       } catch {
-        alert("Archivo JSON no válido");
+        alert("JSON no válido");
       }
     };
     reader.readAsText(archivo);
   });
 
+  cargarSelectGrupos();
   cargarPersonas();
 </script>
 
