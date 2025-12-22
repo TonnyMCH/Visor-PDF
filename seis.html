@@ -110,12 +110,8 @@
 
   function calcularEdad(fecha) {
     const hoy = new Date();
-    const partes = fecha.split("-");
-    const nac = new Date(
-      parseInt(partes[0]),
-      parseInt(partes[1]) - 1,
-      parseInt(partes[2])
-    );
+    const p = fecha.split("-");
+    const nac = new Date(p[0], p[1] - 1, p[2]);
     let edad = hoy.getFullYear() - nac.getFullYear();
     const m = hoy.getMonth() - nac.getMonth();
     if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad--;
@@ -123,29 +119,58 @@
   }
 
   function nombreMes(m) {
-    return [
-      "enero","febrero","marzo","abril","mayo","junio",
-      "julio","agosto","septiembre","octubre","noviembre","diciembre"
-    ][m];
+    return ["enero","febrero","marzo","abril","mayo","junio","julio",
+            "agosto","septiembre","octubre","noviembre","diciembre"][m];
   }
 
-  // ✅ FUNCIÓN CORREGIDA (SIN ERROR DE 1 DÍA)
   function proximoCumple(fecha) {
     const hoy = new Date();
     hoy.setHours(0,0,0,0);
 
-    const partes = fecha.split("-");
-    const mes = parseInt(partes[1], 10) - 1;
-    const dia = parseInt(partes[2], 10);
+    const p = fecha.split("-");
+    const mes = parseInt(p[1]) - 1;
+    const dia = parseInt(p[2]);
 
     let proximo = new Date(hoy.getFullYear(), mes, dia);
     proximo.setHours(0,0,0,0);
 
-    if (proximo < hoy) {
-      proximo.setFullYear(hoy.getFullYear() + 1);
-    }
+    if (proximo < hoy) proximo.setFullYear(hoy.getFullYear() + 1);
 
     return `${dia} de ${nombreMes(mes)} de ${proximo.getFullYear()}`;
+  }
+
+  function diasParaCumple(fecha) {
+    const hoy = new Date();
+    hoy.setHours(0,0,0,0);
+
+    const p = fecha.split("-");
+    let proximo = new Date(hoy.getFullYear(), p[1] - 1, p[2]);
+    proximo.setHours(0,0,0,0);
+
+    if (proximo < hoy) proximo.setFullYear(hoy.getFullYear() + 1);
+
+    return Math.round((proximo - hoy) / (1000 * 60 * 60 * 24));
+  }
+
+  function verificarAlertas() {
+    const personas = obtenerPersonas();
+    if (!personas.length) return;
+
+    let hoyArr = [], mananaArr = [], proximos = [];
+
+    personas.forEach(p => {
+      const d = diasParaCumple(p.nacimiento);
+      if (d === 0) hoyArr.push(p.nombre);
+      else if (d === 1) mananaArr.push(p.nombre);
+      else if (d > 1 && d <= 30) proximos.push(`${p.nombre} (${d} días)`);
+    });
+
+    let msg = "";
+    if (hoyArr.length) msg += "🎉 HOY cumplen años:\n• " + hoyArr.join("\n• ") + "\n\n";
+    if (mananaArr.length) msg += "⏰ MAÑANA cumplen años:\n• " + mananaArr.join("\n• ") + "\n\n";
+    if (proximos.length) msg += "📅 Próximos 30 días:\n• " + proximos.join("\n• ");
+
+    if (msg) alert(msg);
   }
 
   function obtenerPersonas() {
@@ -168,16 +193,12 @@
 
   function cargarSelectGrupos() {
     selectGrupo.innerHTML = `<option value="">Seleccionar grupo</option>`;
-    obtenerGrupos().forEach(g => {
-      selectGrupo.innerHTML += `<option value="${g}">${g}</option>`;
-    });
+    obtenerGrupos().forEach(g => selectGrupo.innerHTML += `<option>${g}</option>`);
   }
 
   function cargarFiltroGrupos() {
     filtroGrupo.innerHTML = `<option value="">Todos los grupos</option>`;
-    obtenerGrupos().forEach(g => {
-      filtroGrupo.innerHTML += `<option value="${g}">${g}</option>`;
-    });
+    obtenerGrupos().forEach(g => filtroGrupo.innerHTML += `<option>${g}</option>`);
   }
 
   function agregarGrupo() {
@@ -191,116 +212,94 @@
   }
 
   function aplicarFiltros() {
-    const texto = busqueda.value.toLowerCase();
-    const grupoSel = filtroGrupo.value;
+    const txt = busqueda.value.toLowerCase();
+    const g = filtroGrupo.value;
 
-    let personas = obtenerPersonas();
-    if (grupoSel) personas = personas.filter(p => p.grupo === grupoSel);
-    if (texto) personas = personas.filter(p =>
-      p.nombre.toLowerCase().includes(texto) || p.id.includes(texto)
-    );
+    let p = obtenerPersonas();
+    if (g) p = p.filter(x => x.grupo === g);
+    if (txt) p = p.filter(x => x.nombre.toLowerCase().includes(txt) || x.id.includes(txt));
 
-    mostrar(personas);
+    mostrar(p);
   }
 
   function mostrar(personas) {
     lista.innerHTML = "";
     personas.forEach(p => {
-      const edad = calcularEdad(p.nacimiento);
-      const cumple = proximoCumple(p.nacimiento);
-
       lista.innerHTML += `
         <div class="card">
           <p>ID: <span>${p.id}</span></p>
           <p>Nombre: <span>${p.nombre}</span></p>
           <p>Grupo: <span>${p.grupo}</span></p>
-          <p>Edad: <span>${edad}</span> años</p>
-          <p>🎂 Próximo cumpleaños: <span>${cumple}</span></p>
+          <p>Edad: <span>${calcularEdad(p.nacimiento)}</span> años</p>
+          <p>🎂 Próximo cumpleaños: <span>${proximoCumple(p.nacimiento)}</span></p>
           <div class="acciones-card">
             <button class="editar" onclick="editar('${p.id}')">✏️ Editar</button>
             <button class="eliminar" onclick="eliminar('${p.id}')">🗑️ Eliminar</button>
           </div>
-        </div>
-      `;
+        </div>`;
     });
   }
 
-  form.addEventListener("submit", e => {
+  form.onsubmit = e => {
     e.preventDefault();
     const personas = obtenerPersonas();
     const i = index.value;
-
-    const persona = {
-      id: id.value.trim(),
-      nombre: nombre.value.trim(),
-      nacimiento: nacimiento.value,
-      grupo: grupo.value
-    };
-
-    if (i === "") personas.push(persona);
-    else personas[i] = persona;
-
+    const p = { id: id.value, nombre: nombre.value, nacimiento: nacimiento.value, grupo: grupo.value };
+    i === "" ? personas.push(p) : personas[i] = p;
     guardarPersonas(personas);
-    form.reset();
-    index.value = "";
+    form.reset(); index.value = "";
     titulo.textContent = "Agregar Persona";
     aplicarFiltros();
-  });
+  };
 
-  function editar(idBuscado) {
-    const personas = obtenerPersonas();
-    const i = personas.findIndex(p => p.id === idBuscado);
-    const p = personas[i];
+  function editar(idB) {
+    const p = obtenerPersonas();
+    const i = p.findIndex(x => x.id === idB);
     index.value = i;
-    id.value = p.id;
-    nombre.value = p.nombre;
-    nacimiento.value = p.nacimiento;
-    grupo.value = p.grupo;
+    id.value = p[i].id;
+    nombre.value = p[i].nombre;
+    nacimiento.value = p[i].nacimiento;
+    grupo.value = p[i].grupo;
     titulo.textContent = "Editar Persona";
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({top:0,behavior:"smooth"});
   }
 
-  function eliminar(idBuscado) {
+  function eliminar(idB) {
     if (!confirm("¿Eliminar persona?")) return;
-    guardarPersonas(obtenerPersonas().filter(p => p.id !== idBuscado));
+    guardarPersonas(obtenerPersonas().filter(p => p.id !== idB));
     aplicarFiltros();
   }
 
   function ordenarPorEdad() {
     const p = obtenerPersonas();
-    p.sort((a, b) => calcularEdad(b.nacimiento) - calcularEdad(a.nacimiento));
+    p.sort((a,b)=>calcularEdad(b.nacimiento)-calcularEdad(a.nacimiento));
     guardarPersonas(p);
     aplicarFiltros();
   }
 
   function exportarJSON() {
-    const data = JSON.stringify({
-      grupos: obtenerGrupos(),
-      personas: obtenerPersonas()
-    }, null, 2);
-    const blob = new Blob([data], { type: "application/json" });
+    const blob = new Blob([JSON.stringify({grupos:obtenerGrupos(),personas:obtenerPersonas()},null,2)],{type:"application/json"});
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = "personas.json";
     a.click();
   }
 
-  importar.addEventListener("change", e => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = e => {
-      const data = JSON.parse(e.target.result);
-      guardarGrupos(data.grupos || []);
-      guardarPersonas(data.personas || []);
+  importar.onchange = e => {
+    const r = new FileReader();
+    r.onload = () => {
+      const d = JSON.parse(r.result);
+      guardarGrupos(d.grupos||[]);
+      guardarPersonas(d.personas||[]);
       aplicarFiltros();
     };
-    reader.readAsText(file);
-  });
+    r.readAsText(e.target.files[0]);
+  };
 
   cargarSelectGrupos();
   cargarFiltroGrupos();
   aplicarFiltros();
+  setTimeout(verificarAlertas, 600);
 </script>
 
 </body>
