@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Personas y Grupos</title>
+  <title>Seis - Personas y Grupos</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
@@ -46,17 +46,12 @@
     .editar { background: #ffc107; color: #000; }
     .eliminar { background: #f44336; color: #fff; }
 
-    .grupo {
-      margin-bottom: 20px;
-      border-top: 2px solid #333;
-      padding-top: 10px;
-    }
-
     .card {
       background: #1e1e1e;
       border-radius: 12px;
       padding: 12px;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
+      border-left: 4px solid #4caf50;
     }
 
     .acciones-card {
@@ -86,7 +81,7 @@
 
 <div class="grupos-box">
   <h3>Crear grupo</h3>
-  <input type="text" id="nuevoGrupo" placeholder="Ej: Familia, Trabajo">
+  <input type="text" id="nuevoGrupo" placeholder="Ej: Amigos, Familia">
   <button class="grupo-btn" onclick="agregarGrupo()">➕ Agregar grupo</button>
 </div>
 
@@ -104,7 +99,7 @@
   <input type="file" id="importar" accept=".json">
 </div>
 
-<h2>Resultados</h2>
+<h2>Personas</h2>
 <div id="lista"></div>
 
 <script>
@@ -120,6 +115,19 @@
     const m = hoy.getMonth() - nac.getMonth();
     if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad--;
     return edad;
+  }
+
+  function nombreMes(m) {
+    return ["enero","febrero","marzo","abril","mayo","junio","julio",
+            "agosto","septiembre","octubre","noviembre","diciembre"][m];
+  }
+
+  function proximoCumple(fecha) {
+    const hoy = new Date();
+    const nac = new Date(fecha);
+    let proximo = new Date(hoy.getFullYear(), nac.getMonth(), nac.getDate());
+    if (proximo < hoy) proximo.setFullYear(hoy.getFullYear() + 1);
+    return `${proximo.getDate()} de ${nombreMes(proximo.getMonth())} de ${proximo.getFullYear()}`;
   }
 
   function obtenerPersonas() {
@@ -143,27 +151,23 @@
   function cargarSelectGrupos() {
     selectGrupo.innerHTML = `<option value="">Seleccionar grupo</option>`;
     obtenerGrupos().forEach(g => {
-      const opt = document.createElement("option");
-      opt.value = opt.textContent = g;
-      selectGrupo.appendChild(opt);
+      selectGrupo.innerHTML += `<option value="${g}">${g}</option>`;
     });
   }
 
   function cargarFiltroGrupos() {
     filtroGrupo.innerHTML = `<option value="">Todos los grupos</option>`;
     obtenerGrupos().forEach(g => {
-      const opt = document.createElement("option");
-      opt.value = opt.textContent = g;
-      filtroGrupo.appendChild(opt);
+      filtroGrupo.innerHTML += `<option value="${g}">${g}</option>`;
     });
   }
 
   function agregarGrupo() {
-    const nombreGrupo = nuevoGrupo.value.trim();
-    if (!nombreGrupo) return alert("Nombre del grupo requerido");
+    const g = nuevoGrupo.value.trim();
+    if (!g) return alert("Nombre requerido");
     const grupos = obtenerGrupos();
-    if (grupos.includes(nombreGrupo)) return alert("El grupo ya existe");
-    grupos.push(nombreGrupo);
+    if (grupos.includes(g)) return alert("El grupo ya existe");
+    grupos.push(g);
     guardarGrupos(grupos);
     nuevoGrupo.value = "";
   }
@@ -173,34 +177,33 @@
     const grupoSel = filtroGrupo.value;
 
     let personas = obtenerPersonas();
-
     if (grupoSel) personas = personas.filter(p => p.grupo === grupoSel);
-    if (texto)
-      personas = personas.filter(p =>
-        p.nombre.toLowerCase().includes(texto) ||
-        p.id.includes(texto)
-      );
+    if (texto) personas = personas.filter(p =>
+      p.nombre.toLowerCase().includes(texto) || p.id.includes(texto)
+    );
 
-    mostrarResultados(personas);
+    mostrar(personas);
   }
 
-  function mostrarResultados(personas) {
+  function mostrar(personas) {
     lista.innerHTML = "";
     personas.forEach(p => {
       const edad = calcularEdad(p.nacimiento);
-      const div = document.createElement("div");
-      div.className = "card";
-      div.innerHTML = `
-        <p>ID: <span>${p.id}</span></p>
-        <p>Nombre: <span>${p.nombre}</span></p>
-        <p>Grupo: <span>${p.grupo}</span></p>
-        <p>Edad: <span>${edad}</span> años</p>
-        <div class="acciones-card">
-          <button class="editar" onclick="editar('${p.id}')">✏️ Editar</button>
-          <button class="eliminar" onclick="eliminar('${p.id}')">🗑️ Eliminar</button>
+      const cumple = proximoCumple(p.nacimiento);
+
+      lista.innerHTML += `
+        <div class="card">
+          <p>ID: <span>${p.id}</span></p>
+          <p>Nombre: <span>${p.nombre}</span></p>
+          <p>Grupo: <span>${p.grupo}</span></p>
+          <p>Edad: <span>${edad}</span> años</p>
+          <p>🎂 Próximo cumpleaños: <span>${cumple}</span></p>
+          <div class="acciones-card">
+            <button class="editar" onclick="editar('${p.id}')">✏️ Editar</button>
+            <button class="eliminar" onclick="eliminar('${p.id}')">🗑️ Eliminar</button>
+          </div>
         </div>
       `;
-      lista.appendChild(div);
     });
   }
 
@@ -217,20 +220,18 @@
     };
 
     if (i === "") personas.push(persona);
-    else {
-      personas[i] = persona;
-      titulo.textContent = "Agregar Persona";
-    }
+    else personas[i] = persona;
 
     guardarPersonas(personas);
     form.reset();
     index.value = "";
+    titulo.textContent = "Agregar Persona";
     aplicarFiltros();
   });
 
-  function editar(idBuscar) {
+  function editar(idBuscado) {
     const personas = obtenerPersonas();
-    const i = personas.findIndex(p => p.id === idBuscar);
+    const i = personas.findIndex(p => p.id === idBuscado);
     const p = personas[i];
     index.value = i;
     id.value = p.id;
@@ -241,52 +242,42 @@
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  function eliminar(idBuscar) {
-    if (!confirm("¿Eliminar esta persona?")) return;
-    const personas = obtenerPersonas().filter(p => p.id !== idBuscar);
-    guardarPersonas(personas);
+  function eliminar(idBuscado) {
+    if (!confirm("¿Eliminar persona?")) return;
+    guardarPersonas(obtenerPersonas().filter(p => p.id !== idBuscado));
     aplicarFiltros();
   }
 
   function ordenarPorEdad() {
-    const personas = obtenerPersonas();
-    personas.sort((a, b) =>
-      calcularEdad(b.nacimiento) - calcularEdad(a.nacimiento)
-    );
-    guardarPersonas(personas);
+    const p = obtenerPersonas();
+    p.sort((a, b) => calcularEdad(b.nacimiento) - calcularEdad(a.nacimiento));
+    guardarPersonas(p);
     aplicarFiltros();
   }
 
   function exportarJSON() {
-    const datos = JSON.stringify({
+    const data = JSON.stringify({
       grupos: obtenerGrupos(),
       personas: obtenerPersonas()
     }, null, 2);
-    const blob = new Blob([datos], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
+    const blob = new Blob([data], { type: "application/json" });
     const a = document.createElement("a");
-    a.href = url;
-    a.download = "personas_grupos.json";
+    a.href = URL.createObjectURL(blob);
+    a.download = "personas.json";
     a.click();
-    URL.revokeObjectURL(url);
   }
 
   importar.addEventListener("change", e => {
-    const archivo = e.target.files[0];
-    if (!archivo) return;
+    const file = e.target.files[0];
+    if (!file) return;
     const reader = new FileReader();
     reader.onload = e => {
-      try {
-        const data = JSON.parse(e.target.result);
-        guardarPersonas(data.personas);
-        guardarGrupos(data.grupos);
-        aplicarFiltros();
-        alert("Datos importados correctamente");
-      } catch {
-        alert("JSON inválido");
-      }
+      const data = JSON.parse(e.target.result);
+      guardarGrupos(data.grupos || []);
+      guardarPersonas(data.personas || []);
+      aplicarFiltros();
     };
-    reader.readAsText(archivo);
+    reader.readAsText(file);
   });
 
   cargarSelectGrupos();
