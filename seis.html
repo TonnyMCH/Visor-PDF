@@ -110,7 +110,12 @@
 
   function calcularEdad(fecha) {
     const hoy = new Date();
-    const nac = new Date(fecha);
+    const partes = fecha.split("-");
+    const nac = new Date(
+      parseInt(partes[0]),
+      parseInt(partes[1]) - 1,
+      parseInt(partes[2])
+    );
     let edad = hoy.getFullYear() - nac.getFullYear();
     const m = hoy.getMonth() - nac.getMonth();
     if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad--;
@@ -118,16 +123,29 @@
   }
 
   function nombreMes(m) {
-    return ["enero","febrero","marzo","abril","mayo","junio","julio",
-            "agosto","septiembre","octubre","noviembre","diciembre"][m];
+    return [
+      "enero","febrero","marzo","abril","mayo","junio",
+      "julio","agosto","septiembre","octubre","noviembre","diciembre"
+    ][m];
   }
 
+  // ✅ FUNCIÓN CORREGIDA (SIN ERROR DE 1 DÍA)
   function proximoCumple(fecha) {
     const hoy = new Date();
-    const nac = new Date(fecha);
-    let proximo = new Date(hoy.getFullYear(), nac.getMonth(), nac.getDate());
-    if (proximo < hoy) proximo.setFullYear(hoy.getFullYear() + 1);
-    return `${proximo.getDate()} de ${nombreMes(proximo.getMonth())} de ${proximo.getFullYear()}`;
+    hoy.setHours(0,0,0,0);
+
+    const partes = fecha.split("-");
+    const mes = parseInt(partes[1], 10) - 1;
+    const dia = parseInt(partes[2], 10);
+
+    let proximo = new Date(hoy.getFullYear(), mes, dia);
+    proximo.setHours(0,0,0,0);
+
+    if (proximo < hoy) {
+      proximo.setFullYear(hoy.getFullYear() + 1);
+    }
+
+    return `${dia} de ${nombreMes(mes)} de ${proximo.getFullYear()}`;
   }
 
   function obtenerPersonas() {
