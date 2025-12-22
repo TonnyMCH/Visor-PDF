@@ -16,7 +16,7 @@
 
     h2, h3 { text-align: center; }
 
-    form, .acciones, .grupos-box {
+    form, .acciones, .grupos-box, .filtros {
       background: #1e1e1e;
       padding: 15px;
       border-radius: 12px;
@@ -52,12 +52,6 @@
       padding-top: 10px;
     }
 
-    .grupo-titulo {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
     .card {
       background: #1e1e1e;
       border-radius: 12px;
@@ -83,20 +77,25 @@
 
 <form id="form">
   <input type="hidden" id="index">
-
   <input type="text" id="id" placeholder="ID" required>
   <input type="text" id="nombre" placeholder="Nombre" required>
   <input type="date" id="nacimiento" required>
-
   <select id="grupo" required></select>
-
   <button class="guardar" type="submit">Guardar</button>
 </form>
 
 <div class="grupos-box">
-  <h3>Crear grupo personalizado</h3>
-  <input type="text" id="nuevoGrupo" placeholder="Ej: Primos, Trabajo, Vecinos">
+  <h3>Crear grupo</h3>
+  <input type="text" id="nuevoGrupo" placeholder="Ej: Familia, Trabajo">
   <button class="grupo-btn" onclick="agregarGrupo()">➕ Agregar grupo</button>
+</div>
+
+<div class="filtros">
+  <h3>Filtrar / Buscar</h3>
+  <select id="filtroGrupo" onchange="aplicarFiltros()">
+    <option value="">Todos los grupos</option>
+  </select>
+  <input type="text" id="busqueda" placeholder="Buscar por nombre o ID" oninput="aplicarFiltros()">
 </div>
 
 <div class="acciones">
@@ -105,12 +104,13 @@
   <input type="file" id="importar" accept=".json">
 </div>
 
-<h2>Personas por grupo</h2>
+<h2>Resultados</h2>
 <div id="lista"></div>
 
 <script>
   const lista = document.getElementById("lista");
   const selectGrupo = document.getElementById("grupo");
+  const filtroGrupo = document.getElementById("filtroGrupo");
   const titulo = document.getElementById("titulo");
 
   function calcularEdad(fecha) {
@@ -127,7 +127,7 @@
   }
 
   function obtenerGrupos() {
-    return JSON.parse(localStorage.getItem("grupos")) || ["Amigos"];
+    return JSON.parse(localStorage.getItem("grupos")) || [];
   }
 
   function guardarPersonas(p) {
@@ -137,61 +137,70 @@
   function guardarGrupos(g) {
     localStorage.setItem("grupos", JSON.stringify(g));
     cargarSelectGrupos();
+    cargarFiltroGrupos();
   }
 
   function cargarSelectGrupos() {
     selectGrupo.innerHTML = `<option value="">Seleccionar grupo</option>`;
     obtenerGrupos().forEach(g => {
       const opt = document.createElement("option");
-      opt.textContent = g;
-      opt.value = g;
+      opt.value = opt.textContent = g;
       selectGrupo.appendChild(opt);
     });
   }
 
+  function cargarFiltroGrupos() {
+    filtroGrupo.innerHTML = `<option value="">Todos los grupos</option>`;
+    obtenerGrupos().forEach(g => {
+      const opt = document.createElement("option");
+      opt.value = opt.textContent = g;
+      filtroGrupo.appendChild(opt);
+    });
+  }
+
   function agregarGrupo() {
-    const nombre = nuevoGrupo.value.trim();
-    if (!nombre) return alert("Escribe un nombre de grupo");
-
+    const nombreGrupo = nuevoGrupo.value.trim();
+    if (!nombreGrupo) return alert("Nombre del grupo requerido");
     const grupos = obtenerGrupos();
-    if (grupos.includes(nombre)) return alert("El grupo ya existe");
-
-    grupos.push(nombre);
+    if (grupos.includes(nombreGrupo)) return alert("El grupo ya existe");
+    grupos.push(nombreGrupo);
     guardarGrupos(grupos);
     nuevoGrupo.value = "";
   }
 
-  function cargarPersonas() {
+  function aplicarFiltros() {
+    const texto = busqueda.value.toLowerCase();
+    const grupoSel = filtroGrupo.value;
+
+    let personas = obtenerPersonas();
+
+    if (grupoSel) personas = personas.filter(p => p.grupo === grupoSel);
+    if (texto)
+      personas = personas.filter(p =>
+        p.nombre.toLowerCase().includes(texto) ||
+        p.id.includes(texto)
+      );
+
+    mostrarResultados(personas);
+  }
+
+  function mostrarResultados(personas) {
     lista.innerHTML = "";
-    const personas = obtenerPersonas();
-    const grupos = obtenerGrupos();
-
-    grupos.forEach(g => {
-      const miembros = personas.filter(p => p.grupo === g);
-      if (!miembros.length) return;
-
-      const cont = document.createElement("div");
-      cont.className = "grupo";
-      cont.innerHTML = `<h3>${g}</h3>`;
-
-      miembros.forEach(p => {
-        const edad = calcularEdad(p.nacimiento);
-        const div = document.createElement("div");
-        div.className = "card";
-        div.innerHTML = `
-          <p>ID: <span>${p.id}</span></p>
-          <p>Nombre: <span>${p.nombre}</span></p>
-          <p>Nacimiento: <span>${p.nacimiento}</span></p>
-          <p>Edad: <span>${edad}</span> años</p>
-          <div class="acciones-card">
-            <button class="editar" onclick="editar('${p.id}')">✏️ Editar</button>
-            <button class="eliminar" onclick="eliminar('${p.id}')">🗑️ Eliminar</button>
-          </div>
-        `;
-        cont.appendChild(div);
-      });
-
-      lista.appendChild(cont);
+    personas.forEach(p => {
+      const edad = calcularEdad(p.nacimiento);
+      const div = document.createElement("div");
+      div.className = "card";
+      div.innerHTML = `
+        <p>ID: <span>${p.id}</span></p>
+        <p>Nombre: <span>${p.nombre}</span></p>
+        <p>Grupo: <span>${p.grupo}</span></p>
+        <p>Edad: <span>${edad}</span> años</p>
+        <div class="acciones-card">
+          <button class="editar" onclick="editar('${p.id}')">✏️ Editar</button>
+          <button class="eliminar" onclick="eliminar('${p.id}')">🗑️ Eliminar</button>
+        </div>
+      `;
+      lista.appendChild(div);
     });
   }
 
@@ -216,14 +225,13 @@
     guardarPersonas(personas);
     form.reset();
     index.value = "";
-    cargarPersonas();
+    aplicarFiltros();
   });
 
   function editar(idBuscar) {
     const personas = obtenerPersonas();
     const i = personas.findIndex(p => p.id === idBuscar);
     const p = personas[i];
-
     index.value = i;
     id.value = p.id;
     nombre.value = p.nombre;
@@ -235,9 +243,9 @@
 
   function eliminar(idBuscar) {
     if (!confirm("¿Eliminar esta persona?")) return;
-    let personas = obtenerPersonas().filter(p => p.id !== idBuscar);
+    const personas = obtenerPersonas().filter(p => p.id !== idBuscar);
     guardarPersonas(personas);
-    cargarPersonas();
+    aplicarFiltros();
   }
 
   function ordenarPorEdad() {
@@ -246,7 +254,7 @@
       calcularEdad(b.nacimiento) - calcularEdad(a.nacimiento)
     );
     guardarPersonas(personas);
-    cargarPersonas();
+    aplicarFiltros();
   }
 
   function exportarJSON() {
@@ -254,7 +262,6 @@
       grupos: obtenerGrupos(),
       personas: obtenerPersonas()
     }, null, 2);
-
     const blob = new Blob([datos], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -267,25 +274,24 @@
   importar.addEventListener("change", e => {
     const archivo = e.target.files[0];
     if (!archivo) return;
-
     const reader = new FileReader();
     reader.onload = e => {
       try {
         const data = JSON.parse(e.target.result);
-        if (!data.personas || !data.grupos) throw 0;
         guardarPersonas(data.personas);
         guardarGrupos(data.grupos);
-        cargarPersonas();
+        aplicarFiltros();
         alert("Datos importados correctamente");
       } catch {
-        alert("JSON no válido");
+        alert("JSON inválido");
       }
     };
     reader.readAsText(archivo);
   });
 
   cargarSelectGrupos();
-  cargarPersonas();
+  cargarFiltroGrupos();
+  aplicarFiltros();
 </script>
 
 </body>
