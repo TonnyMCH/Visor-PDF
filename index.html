@@ -139,68 +139,74 @@ a{
 
 <body>
 
-<a data-id="enlace1" class="item">
-  <img src="imagenes/imagen1.png">
-  <div class="texto">Sellar PDF</div>
-  <div class="sub">Firma y sello</div>
-</a>
+    <a data-id="enlace1" class="item">
+        <img src="imagenes/imagen1.png">
+        <div class="texto">Sellar PDF</div>
+        <div class="sub">Firma y sello</div>
+    </a>
 
-<a data-id="enlace2" class="item">
-  <img src="imagenes/imagen2.png">
-  <div class="texto">Unificar PDF</div>
-  <div class="sub">Combinar archivos</div>
-</a>
+    <a data-id="enlace2" class="item">
+        <img src="imagenes/imagen2.png">
+        <div class="texto">Unificar PDF</div>
+        <div class="sub">Combinar archivos</div>
+    </a>
 
-<a data-id="enlace3" class="item">
-  <img src="imagenes/imagen3.png">
-  <div class="texto">Texto a PDF</div>
-  <div class="sub">Crear documentos</div>
-</a>
+    <a data-id="enlace3" class="item">
+        <img src="imagenes/imagen3.png">
+        <div class="texto">Texto a PDF</div>
+        <div class="sub">Crear documentos</div>
+    </a>
 
-<a data-id="enlace4" class="item">
-  <img src="imagenes/imagen4.png">
-  <div class="texto">Recorte PNG</div>
-  <div class="sub">Forma circular</div>
-</a>
+    <a data-id="enlace4" class="item">
+        <img src="imagenes/imagen4.png">
+        <div class="texto">Recorte PNG</div>
+        <div class="sub">Forma circular</div>
+    </a>
 
-<a data-id="enlace5" class="item">
-  <img src="imagenes/imagen5.png">
-  <div class="texto">Bingo</div>
-  <div class="sub">Cartones móviles</div>
-</a>
+    <a data-id="enlace5" class="item">
+        <img src="imagenes/imagen5.png">
+        <div class="texto">Bingo</div>
+        <div class="sub">Cartones móviles</div>
+    </a>
 
-<a data-id="enlace6" class="item">
-  <img src="imagenes/imagen6.png">
-  <div class="texto">Edades</div>
-  <div class="sub">Cálculo automático</div>
-</a>
+    <a data-id="enlace6" class="item">
+        <img src="imagenes/imagen6.png">
+        <div class="texto">Edades</div>
+        <div class="sub">Cálculo automático</div>
+    </a>
 
-<!-- VIBRACIÓN -->
-<script>
-document.querySelectorAll('.item').forEach(i=>{
-  i.addEventListener('touchstart',()=>{
-    if(navigator.vibrate) navigator.vibrate(18);
-  });
-});
-</script>
+    <a data-id="enlace7" class="item">
+        <img src="imagenes/imagen7.png">
+        <div class="texto">Aniversario fallecidos</div>
+        <div class="sub">Cálculo automático</div>
+    </a>
 
-<!-- SERVICE WORKER -->
-<script>
-if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("service-worker.js");
-}
-</script>
+    <!-- VIBRACIÓN -->
+    <script>
+        document.querySelectorAll('.item').forEach(i => {
+            i.addEventListener('touchstart', () => {
+                if (navigator.vibrate) navigator.vibrate(18);
+            });
+        });
+    </script>
 
-<!-- ENLACES DINÁMICOS -->
-<script src="enlaces.js"></script>
-<script>
-document.querySelectorAll('[data-id]').forEach(a=>{
-  const id=a.dataset.id;
-  if(typeof enlaces!=="undefined" && enlaces[id]){
-    a.href=enlaces[id];
-  }
-});
-</script>
+    <!-- SERVICE WORKER -->
+    <script>
+        if ("serviceWorker" in navigator) {
+            navigator.serviceWorker.register("service-worker.js");
+        }
+    </script>
+
+    <!-- ENLACES DINÁMICOS -->
+    <script src="enlaces.js"></script>
+    <script>
+        document.querySelectorAll('[data-id]').forEach(a => {
+            const id = a.dataset.id;
+            if (typeof enlaces !== "undefined" && enlaces[id]) {
+                a.href = enlaces[id];
+            }
+        });
+    </script>
 
 </body>
 </html>
