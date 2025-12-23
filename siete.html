@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Registro Memorial de Fallecidos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, Arial, sans-serif;
+      background: #111;
+      color: #fff;
+      padding: 15px;
+    }
+
+    h2, h3 { text-align: center; }
+
+    form, .acciones, .grupos-box, .filtros {
+      background: #1e1e1e;
+      padding: 15px;
+      border-radius: 12px;
+      margin-bottom: 15px;
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin: 6px 0;
+      border-radius: 8px;
+      border: none;
+      font-size: 15px;
+    }
+
+    input, select {
+      background: #2a2a2a;
+      color: #fff;
+    }
+
+    button { font-weight: bold; cursor: pointer; }
+
+    .guardar { background: #4caf50; color: #000; }
+    .grupo-btn { background: #03a9f4; color: #000; }
+    .ordenar { background: #9c27b0; color: #fff; }
+    .exportar { background: #2196f3; color: #fff; }
+    .editar { background: #ffc107; color: #000; }
+    .eliminar { background: #f44336; color: #fff; }
+
+    .card {
+      background: #1e1e1e;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 12px;
+      border-left: 4px solid #9c27b0;
+    }
+
+    .acciones-card {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    span {
+      color: #9c27b0;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<h2 id="titulo">Agregar Persona Fallecida</h2>
+
+<form id="form">
+  <input type="hidden" id="index">
+  <input type="text" id="id" placeholder="ID" required>
+  <input type="text" id="nombre" placeholder="Nombre" required>
+  <input type="number" id="edadFallecer" placeholder="Edad al fallecer" min="0" required>
+  <input type="date" id="fallecimiento" required>
+  <select id="grupo" required></select>
+  <button class="guardar" type="submit">Guardar</button>
+</form>
+
+<div class="grupos-box">
+  <h3>Crear grupo</h3>
+  <input type="text" id="nuevoGrupo" placeholder="Ej: Familia, Comunidad">
+  <button class="grupo-btn" onclick="agregarGrupo()">➕ Agregar grupo</button>
+</div>
+
+<div class="filtros">
+  <h3>Filtrar / Buscar</h3>
+  <select id="filtroGrupo" onchange="aplicarFiltros()">
+    <option value="">Todos los grupos</option>
+  </select>
+  <input type="text" id="busqueda" placeholder="Buscar por nombre o ID" oninput="aplicarFiltros()">
+</div>
+
+<div class="acciones">
+  <button class="ordenar" onclick="ordenarPorAnios()">🔽 Ordenar por años desde fallecimiento</button>
+  <button class="exportar" onclick="exportarJSON()">📤 Exportar JSON</button>
+  <input type="file" id="importar" accept=".json">
+</div>
+
+<h2>Personas</h2>
+<div id="lista"></div>
+
+<script>
+  const lista = document.getElementById("lista");
+  const selectGrupo = document.getElementById("grupo");
+  const filtroGrupo = document.getElementById("filtroGrupo");
+  const titulo = document.getElementById("titulo");
+
+  function nombreMes(m) {
+    return ["enero","febrero","marzo","abril","mayo","junio",
+            "julio","agosto","septiembre","octubre","noviembre","diciembre"][m];
+  }
+
+  function aniosDesde(fecha) {
+    const hoy = new Date();
+    const f = new Date(fecha);
+    let a = hoy.getFullYear() - f.getFullYear();
+    const m = hoy.getMonth() - f.getMonth();
+    if (m < 0 || (m === 0 && hoy.getDate() < f.getDate())) a--;
+    return a;
+  }
+
+  function proximoAniversario(fecha) {
+    const hoy = new Date();
+    hoy.setHours(0,0,0,0);
+
+    const f = new Date(fecha);
+    let anio = hoy.getFullYear();
+
+    let a = new Date(anio, f.getMonth(), f.getDate());
+    a.setHours(0,0,0,0);
+
+    if (a < hoy) {
+      anio++;
+      a = new Date(anio, f.getMonth(), f.getDate());
+    }
+    return a;
+  }
+
+  function textoAniversario(fecha) {
+    const f = new Date(fecha);
+    const a = proximoAniversario(fecha);
+    const anios = a.getFullYear() - f.getFullYear();
+
+    return `${a.getDate()} de ${nombreMes(a.getMonth())} de ${a.getFullYear()} (se cumplen ${anios} años)`;
+  }
+
+  function obtenerPersonas() {
+    return JSON.parse(localStorage.getItem("fallecidos")) || [];
+  }
+
+  function obtenerGrupos() {
+    return JSON.parse(localStorage.getItem("grupos_fallecidos")) || [];
+  }
+
+  function guardarPersonas(p) {
+    localStorage.setItem("fallecidos", JSON.stringify(p));
+  }
+
+  function guardarGrupos(g) {
+    localStorage.setItem("grupos_fallecidos", JSON.stringify(g));
+    cargarSelectGrupos();
+    cargarFiltroGrupos();
+  }
+
+  function cargarSelectGrupos() {
+    selectGrupo.innerHTML = `<option value="">Seleccionar grupo</option>`;
+    obtenerGrupos().forEach(g => selectGrupo.innerHTML += `<option>${g}</option>`);
+  }
+
+  function cargarFiltroGrupos() {
+    filtroGrupo.innerHTML = `<option value="">Todos los grupos</option>`;
+    obtenerGrupos().forEach(g => filtroGrupo.innerHTML += `<option>${g}</option>`);
+  }
+
+  function agregarGrupo() {
+    const g = nuevoGrupo.value.trim();
+    if (!g) return alert("Nombre requerido");
+    const grupos = obtenerGrupos();
+    if (grupos.includes(g)) return alert("El grupo ya existe");
+    grupos.push(g);
+    guardarGrupos(grupos);
+    nuevoGrupo.value = "";
+  }
+
+  function aplicarFiltros() {
+    const txt = busqueda.value.toLowerCase();
+    const g = filtroGrupo.value;
+
+    let p = obtenerPersonas();
+    if (g) p = p.filter(x => x.grupo === g);
+    if (txt) p = p.filter(x => x.nombre.toLowerCase().includes(txt) || x.id.includes(txt));
+
+    mostrar(p);
+  }
+
+  function mostrar(personas) {
+    lista.innerHTML = "";
+    personas.forEach(p => {
+      lista.innerHTML += `
+        <div class="card">
+          <p>ID: <span>${p.id}</span></p>
+          <p>Nombre: <span>${p.nombre}</span></p>
+          <p>Grupo: <span>${p.grupo}</span></p>
+          <p>Edad al fallecer: <span>${p.edadFallecer}</span> años</p>
+          <p>Falleció el: <span>${p.fallecimiento}</span></p>
+          <p>⏳ Años desde fallecimiento: <span>${aniosDesde(p.fallecimiento)}</span></p>
+          <p>🕯️ Próximo aniversario: <span>${textoAniversario(p.fallecimiento)}</span></p>
+
+          <div class="acciones-card">
+            <button class="editar" onclick="editar('${p.id}')">✏️ Editar</button>
+            <button class="eliminar" onclick="eliminar('${p.id}')">🗑️ Eliminar</button>
+          </div>
+        </div>`;
+    });
+  }
+
+  form.onsubmit = e => {
+    e.preventDefault();
+    const personas = obtenerPersonas();
+    const i = index.value;
+
+    const p = {
+      id: id.value,
+      nombre: nombre.value,
+      edadFallecer: edadFallecer.value,
+      fallecimiento: fallecimiento.value,
+      grupo: grupo.value
+    };
+
+    i === "" ? personas.push(p) : personas[i] = p;
+    guardarPersonas(personas);
+    form.reset(); index.value = "";
+    titulo.textContent = "Agregar Persona Fallecida";
+    aplicarFiltros();
+  };
+
+  function editar(idB) {
+    const p = obtenerPersonas();
+    const i = p.findIndex(x => x.id === idB);
+    index.value = i;
+    id.value = p[i].id;
+    nombre.value = p[i].nombre;
+    edadFallecer.value = p[i].edadFallecer;
+    fallecimiento.value = p[i].fallecimiento;
+    grupo.value = p[i].grupo;
+    titulo.textContent = "Editar Persona";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function eliminar(idB) {
+    if (!confirm("¿Eliminar registro?")) return;
+    guardarPersonas(obtenerPersonas().filter(p => p.id !== idB));
+    aplicarFiltros();
+  }
+
+  function ordenarPorAnios() {
+    const p = obtenerPersonas();
+    p.sort((a,b)=>aniosDesde(b.fallecimiento)-aniosDesde(a.fallecimiento));
+    guardarPersonas(p);
+    aplicarFiltros();
+  }
+
+  function exportarJSON() {
+    const blob = new Blob(
+      [JSON.stringify({ grupos: obtenerGrupos(), personas: obtenerPersonas() }, null, 2)],
+      { type: "application/json" }
+    );
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "fallecidos.json";
+    a.click();
+  }
+
+  importar.onchange = e => {
+    const r = new FileReader();
+    r.onload = () => {
+      const d = JSON.parse(r.result);
+      guardarGrupos(d.grupos || []);
+      guardarPersonas(d.personas || []);
+      aplicarFiltros();
+    };
+    r.readAsText(e.target.files[0]);
+  };
+
+  cargarSelectGrupos();
+  cargarFiltroGrupos();
+  aplicarFiltros();
+</script>
+
+</body>
+</html>
