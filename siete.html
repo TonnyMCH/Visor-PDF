@@ -114,9 +114,16 @@
             "julio","agosto","septiembre","octubre","noviembre","diciembre"][m];
   }
 
+  // 🔒 FECHA LOCAL (solución zona horaria)
+  function fechaLocal(fecha) {
+    const [y, m, d] = fecha.split("-").map(Number);
+    return new Date(y, m - 1, d);
+  }
+
   function aniosDesde(fecha) {
     const hoy = new Date();
-    const f = new Date(fecha);
+    const f = fechaLocal(fecha);
+
     let a = hoy.getFullYear() - f.getFullYear();
     const m = hoy.getMonth() - f.getMonth();
     if (m < 0 || (m === 0 && hoy.getDate() < f.getDate())) a--;
@@ -127,7 +134,7 @@
     const hoy = new Date();
     hoy.setHours(0,0,0,0);
 
-    const f = new Date(fecha);
+    const f = fechaLocal(fecha);
     let anio = hoy.getFullYear();
 
     let a = new Date(anio, f.getMonth(), f.getDate());
@@ -141,7 +148,7 @@
   }
 
   function textoAniversario(fecha) {
-    const f = new Date(fecha);
+    const f = fechaLocal(fecha);
     const a = proximoAniversario(fecha);
     const anios = a.getFullYear() - f.getFullYear();
 
