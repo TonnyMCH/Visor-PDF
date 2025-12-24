@@ -1,0 +1,246 @@
+{
+  "grupos": [
+    "Padres",
+    "Hermanos",
+    "Sobrinos",
+    "Tíos paternos",
+    "Tíos maternos",
+    "Amigos"
+  ],
+  "personas": [
+    {
+      "id": "102860732",
+      "nombre": "Rafael Ángel Mora Arroyo",
+      "nacimiento": "1940-07-27",
+      "grupo": "Tíos paternos"
+    },
+    {
+      "id": "102930415",
+      "nombre": "Mario Mora Arroyo",
+      "nacimiento": "1941-10-15",
+      "grupo": "Tíos paternos"
+    },
+    {
+      "id": "103290001",
+      "nombre": "Fernando Mora Arroyo",
+      "nacimiento": "1945-03-25",
+      "grupo": "Tíos paternos"
+    },
+    {
+      "id": "103740203",
+      "nombre": "Orlando",
+      "nacimiento": "1949-05-05",
+      "grupo": "Padres"
+    },
+    {
+      "id": "800770823",
+      "nombre": "Gloria Leticia Porras Suárez",
+      "nacimiento": "1949-06-12",
+      "grupo": "Amigos"
+    },
+    {
+      "id": "104041040",
+      "nombre": "Alvaro Mora Arroyo",
+      "nacimiento": "1951-08-26",
+      "grupo": "Tíos paternos"
+    },
+    {
+      "id": "104310817",
+      "nombre": "María Rosa Mora Arroyo",
+      "nacimiento": "1953-10-10",
+      "grupo": "Tíos paternos"
+    },
+    {
+      "id": "104340534",
+      "nombre": "Maria Teresa Chavarría Chacón",
+      "nacimiento": "1954-10-15",
+      "grupo": "Tíos maternos"
+    },
+    {
+      "id": "104520187",
+      "nombre": "Gerardina Chavarría Chacón",
+      "nacimiento": "1955-09-12",
+      "grupo": "Tíos maternos"
+    },
+    {
+      "id": "104480118",
+      "nombre": "Jorge Arturo Mora Arroyo",
+      "nacimiento": "1955-05-22",
+      "grupo": "Tíos paternos"
+    },
+    {
+      "id": "601150014",
+      "nombre": "María Eni Salazar Campos",
+      "nacimiento": "1955-01-15",
+      "grupo": "Amigos"
+    },
+    {
+      "id": "601300243",
+      "nombre": "Ramón Felix Chavarría Chacón",
+      "nacimiento": "1956-10-21",
+      "grupo": "Tíos maternos"
+    },
+    {
+      "id": "104970586",
+      "nombre": "Margarita Chavarría Chacón",
+      "nacimiento": "1957-12-06",
+      "grupo": "Padres"
+    },
+    {
+      "id": "105550552",
+      "nombre": "Victor Manuel Chavarría Chacón",
+      "nacimiento": "1960-06-08",
+      "grupo": "Tíos maternos"
+    },
+    {
+      "id": "105350769",
+      "nombre": "Luz Miriam Mora Arroyo",
+      "nacimiento": "1960-03-21",
+      "grupo": "Tíos paternos"
+    },
+    {
+      "id": "1105550116",
+      "nombre": "Zeidy Jiménez Tabash",
+      "nacimiento": "1961-04-15",
+      "grupo": "Amigos"
+    },
+    {
+      "id": "601680434",
+      "nombre": "Julio Rubén Chavarría Chacón",
+      "nacimiento": "1962-01-25",
+      "grupo": "Tíos maternos"
+    },
+    {
+      "id": "106410459",
+      "nombre": "María Isabel Chavarría Chacón",
+      "nacimiento": "1964-11-07",
+      "grupo": "Tíos maternos"
+    },
+    {
+      "id": "900920340",
+      "nombre": "Virginia Mora Arroyo",
+      "nacimiento": "1965-09-19",
+      "grupo": "Tíos paternos"
+    },
+    {
+      "id": "602020751",
+      "nombre": "Rafael Isidro Chavarría Chacón",
+      "nacimiento": "1966-05-16",
+      "grupo": "Tíos maternos"
+    },
+    {
+      "id": "110280011",
+      "nombre": "Hermes Orlando Mora Chavarría",
+      "nacimiento": "1978-12-16",
+      "grupo": "Hermanos"
+    },
+    {
+      "id": "112260668",
+      "nombre": "José Marvin Mora Chavarría",
+      "nacimiento": "1984-12-04",
+      "grupo": "Hermanos"
+    },
+    {
+      "id": "112800966",
+      "nombre": "Mauricio Mora Chavarría",
+      "nacimiento": "1986-05-25",
+      "grupo": "Hermanos"
+    },
+    {
+      "id": "113760929",
+      "nombre": "Andrea María Mora Chavarría",
+      "nacimiento": "1988-12-23",
+      "grupo": "Hermanos"
+    },
+    {
+      "id": "114310908",
+      "nombre": "Debbie Diana Zec Jiménez",
+      "nacimiento": "1990-02-02",
+      "grupo": "Amigos"
+    },
+    {
+      "id": "115330130",
+      "nombre": "Anthonny Mora Chavarría",
+      "nacimiento": "1993-03-11",
+      "grupo": "Hermanos"
+    },
+    {
+      "id": "11548474",
+      "nombre": "Daniela Zec Jiménez",
+      "nacimiento": "1993-09-09",
+      "grupo": "Amigos"
+    },
+    {
+      "id": "117430302",
+      "nombre": "Kimberly Susana Mora Granados",
+      "nacimiento": "1999-05-08",
+      "grupo": "Sobrinos"
+    },
+    {
+      "id": "119280541",
+      "nombre": "Hermes Jesús Mora Granados",
+      "nacimiento": "2005-01-23",
+      "grupo": "Sobrinos"
+    },
+    {
+      "id": "605060788",
+      "nombre": "Ashley Rachel Mora Otarola",
+      "nacimiento": "2007-07-20",
+      "grupo": "Sobrinos"
+    },
+    {
+      "id": "120140786",
+      "nombre": "Katherine Paola Mora Granados",
+      "nacimiento": "2008-01-10",
+      "grupo": "Sobrinos"
+    },
+    {
+      "id": "122120827",
+      "nombre": "Scarlett Tamara Corrales Mora",
+      "nacimiento": "2014-10-14",
+      "grupo": "Sobrinos"
+    },
+    {
+      "id": "122190919",
+      "nombre": "Allison Amanda Mora Quesada",
+      "nacimiento": "2015-01-11",
+      "grupo": "Sobrinos"
+    },
+    {
+      "id": "122360353",
+      "nombre": "Ariana Natasha Mora Carvajal",
+      "nacimiento": "2015-08-28",
+      "grupo": "Sobrinos"
+    },
+    {
+      "id": "123270325",
+      "nombre": "Karolina Sofia Mora Carvajal",
+      "nacimiento": "2019-04-04",
+      "grupo": "Sobrinos"
+    },
+    {
+      "id": "123280629",
+      "nombre": "Jarrett Alejandro Corrales Mora",
+      "nacimiento": "2019-03-31",
+      "grupo": "Sobrinos"
+    },
+    {
+      "id": "123660286",
+      "nombre": "Thiago Matías Mora Quesada",
+      "nacimiento": "2021-01-09",
+      "grupo": "Sobrinos"
+    },
+    {
+      "id": "124360146",
+      "nombre": "Emma Anahi Mora Granados",
+      "nacimiento": "2024-10-11",
+      "grupo": "Sobrinos"
+    },
+    {
+      "id": "606030969",
+      "nombre": "Leilani Sarahi Marchena Mora",
+      "nacimiento": "2024-08-06",
+      "grupo": "Sobrinos"
+    }
+  ]
+}

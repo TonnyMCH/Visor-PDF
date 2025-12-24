@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Descargar archivos JSON</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      background: #f4f6f8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .contenedor {
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      text-align: center;
+      width: 100%;
+      max-width: 360px;
+    }
+
+    h1 {
+      font-size: 1.3rem;
+      margin-bottom: 20px;
+    }
+
+    a.descarga {
+      display: block;
+      margin: 10px 0;
+      padding: 12px;
+      background: #007bff;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 600;
+    }
+
+    a.descarga:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="contenedor">
+    <h1>📂 Descargar archivos</h1>
+
+    <a class="descarga" href="personas.json" download>
+      ⬇ Descargar personas.json
+    </a>
+
+    <a class="descarga" href="fallecidos.json" download>
+      ⬇ Descargar fallecidos.json
+    </a>
+  </div>
+
+</body>
+</html>

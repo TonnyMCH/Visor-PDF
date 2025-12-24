@@ -1,0 +1,95 @@
+{
+  "grupos": [
+    "Abuelos Paternos",
+    "Abuelos Maternos",
+    "Tíos Paternos",
+    "Tíos Maternos",
+    "Hermano"
+  ],
+  "personas": [
+    {
+      "id": "400500144",
+      "nombre": "RUBEN CHAVARRIA SANCHO",
+      "edadFallecer": "47",
+      "fallecimiento": "1970-03-08",
+      "grupo": "Abuelos Maternos"
+    },
+    {
+      "id": "400580219",
+      "nombre": "CLARA ROSA RAMONA CHACON VILLALOBOS",
+      "edadFallecer": "69",
+      "fallecimiento": "1997-08-04",
+      "grupo": "Abuelos Maternos"
+    },
+    {
+      "id": "900920503",
+      "nombre": "DAISY DEL CARMEN MORA ARROYO",
+      "edadFallecer": "45",
+      "fallecimiento": "2008-09-17",
+      "grupo": "Tíos Paternos"
+    },
+    {
+      "id": "101200870",
+      "nombre": "HUMBERTO MORA MENA",
+      "edadFallecer": "93",
+      "fallecimiento": "2011-01-02",
+      "grupo": "Abuelos Paternos"
+    },
+    {
+      "id": "101280770",
+      "nombre": "PASTORA ARROYO RIVERA",
+      "edadFallecer": "97",
+      "fallecimiento": "2015-12-23",
+      "grupo": "Abuelos Paternos"
+    },
+    {
+      "id": "103080422",
+      "nombre": "JOSE PATROCINIO MORA ARROYO",
+      "edadFallecer": "80",
+      "fallecimiento": "2023-10-31",
+      "grupo": "Tíos Paternos"
+    },
+    {
+      "id": "104710782",
+      "nombre": "VICTOR JULIO MORA ARROYO",
+      "edadFallecer": "62",
+      "fallecimiento": "2019-08-01",
+      "grupo": "Tíos Paternos"
+    },
+    {
+      "id": "111780729",
+      "nombre": "YORLENY ROCIO VARGAS MORA",
+      "edadFallecer": "41",
+      "fallecimiento": "2025-05-23",
+      "grupo": "Tíos Paternos"
+    },
+    {
+      "id": "602250319",
+      "nombre": "GERTRUDIS SOCORRO CHAVARRIA CHACON",
+      "edadFallecer": "38",
+      "fallecimiento": "2008-01-21",
+      "grupo": "Tíos Maternos"
+    },
+    {
+      "id": "601430332",
+      "nombre": "MIGUEL ANGEL CHAVARRIA CHACON",
+      "edadFallecer": "17",
+      "fallecimiento": "1976-12-14",
+      "grupo": "Tíos Maternos"
+    },
+    {
+      "id": "601770241",
+      "nombre": "CLARA LUZ CHAVARRIA CHACON",
+      "edadFallecer": "62",
+      "fallecimiento": "2025-12-06",
+      "grupo": "Tíos Maternos"
+    },
+    {
+      "id": "1105550116",
+      "nombre": "MINOR MORA CHAVARRIA",
+      "edadFallecer": "10",
+      "fallecimiento": "1991-12-22",
+      "grupo": "Hermano"
+    }
+  ]
+}
