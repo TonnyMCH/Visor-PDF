@@ -56,7 +56,7 @@ th{background:#eee}
   <label>Valor por Hora (₡)</label>
   <input type="number" id="valorHora" value="2000">
 
-  <button>💾 Guardar Trabajo</button>
+  <button type="submit">💾 Guardar Trabajo</button>
 </form>
 
 <div class="acciones">
@@ -65,14 +65,14 @@ th{background:#eee}
     <label for="soloPendientes">Mostrar solo pendientes</label>
   </div>
 
-  <button class="sec" onclick="exportarExcel()">📊 Excel</button>
-  <button class="sec" onclick="exportarExcelPendientes()">📊 Excel Pendientes</button>
-  <button class="sec" onclick="exportarPDFPendientes()">📤 WhatsApp (PDF)</button>
+  <button type="button" class="sec" onclick="exportarExcel()">📊 Excel</button>
+  <button type="button" class="sec" onclick="exportarExcelPendientes()">📊 Excel Pendientes</button>
+  <button type="button" class="sec" onclick="exportarPDFPendientes()">📤 WhatsApp (PDF)</button>
 
   <hr>
 
-  <button class="warn" onclick="exportarJSON()">💾 Exportar JSON</button>
-  <button class="warn" onclick="document.getElementById('importJSON').click()">📥 Importar JSON</button>
+  <button type="button" class="warn" onclick="exportarJSON()">💾 Exportar JSON</button>
+  <button type="button" class="warn" onclick="document.getElementById('importJSON').click()">📥 Importar JSON</button>
   <input type="file" id="importJSON" accept=".json" hidden>
 </div>
 
@@ -127,32 +127,31 @@ const fechaHoy=()=>new Date().toLocaleDateString("es-CR");
 
 function render(){
   tabla.innerHTML="";
-  const totalReal = registros.reduce((s,r)=>s+r.pendiente,0);
-  totalDebe.textContent = totalReal;
+  totalDebe.textContent = registros.reduce((s,r)=>s+r.pendiente,0);
 
   registros.forEach((r,i)=>{
     if(soloPendientes.checked && r.pendiente===0) return;
 
     tabla.innerHTML+=`
-    <tr>
-      <td>${fechaBonita(r.fecha)}</td>
-      <td>${r.horas.toFixed(2)}</td>
-      <td>₡${r.total}</td>
-      <td class="${r.pendiente===0?'pago':''}">
-        ${r.pendiente===0?'PAGADO':'₡'+r.pendiente}
-      </td>
-      <td>
-        <input type="number" min="0" placeholder="₡"
-        onkeydown="if(event.key==='Enter')abonar(${i},this)">
-      </td>
-      <td class="historial">
-        ${r.abonos.map(a=>`${a.fecha}: ₡${a.monto}`).join("<br>")}
-      </td>
-      <td>
-        <button onclick="editar(${i})">✏️</button>
-        <button class="danger" onclick="eliminar(${i})">🗑️</button>
-      </td>
-    </tr>`;
+      <tr>
+        <td>${fechaBonita(r.fecha)}</td>
+        <td>${r.horas.toFixed(2)}</td>
+        <td>₡${r.total}</td>
+        <td class="${r.pendiente===0?'pago':''}">
+          ${r.pendiente===0?'PAGADO':'₡'+r.pendiente}
+        </td>
+        <td>
+          <input type="number" min="0" placeholder="₡"
+            onkeydown="if(event.key==='Enter')abonar(${i},this)">
+        </td>
+        <td class="historial">
+          ${r.abonos.map(a=>`${a.fecha}: ₡${a.monto}`).join("<br>")}
+        </td>
+        <td>
+          <button type="button" onclick="editar(${i})">✏️</button>
+          <button type="button" class="danger" onclick="eliminar(${i})">🗑️</button>
+        </td>
+      </tr>`;
   });
 
   localStorage.setItem("horas",JSON.stringify(registros));
@@ -193,6 +192,81 @@ function eliminar(i){
   if(confirm("¿Eliminar este trabajo?")){registros.splice(i,1);render();}
 }
 
+/* ===== EXCEL ===== */
+function exportarExcel(){
+  if(typeof XLSX==="undefined"){alert("Excel no disponible");return;}
+  const datos=registros.map(r=>({
+    Fecha:fechaBonita(r.fecha),
+    Inicio:r.inicio,
+    Salida:r.salida,
+    Detalle:r.detalle,
+    Horas:r.horas,
+    Total:r.total,
+    Pendiente:r.pendiente,
+    Abonos:r.abonos.map(a=>`${a.fecha} ₡${a.monto}`).join(" | ")
+  }));
+  const ws=XLSX.utils.json_to_sheet(datos);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,"Horas");
+  XLSX.writeFile(wb,"horas_trabajo.xlsx");
+}
+
+function exportarExcelPendientes(){
+  if(typeof XLSX==="undefined"){alert("Excel no disponible");return;}
+  const p=registros.filter(r=>r.pendiente>0);
+  if(!p.length){alert("No hay pendientes");return;}
+  const datos=p.map(r=>({
+    Fecha:fechaBonita(r.fecha),
+    Detalle:r.detalle,
+    Pendiente:r.pendiente
+  }));
+  datos.push({Fecha:"TOTAL",Pendiente:p.reduce((s,r)=>s+r.pendiente,0)});
+  const ws=XLSX.utils.json_to_sheet(datos);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,"Pendientes");
+  XLSX.writeFile(wb,"horas_pendientes.xlsx");
+}
+
+/* ===== PDF ===== */
+async function exportarPDFPendientes(){
+  if(!window.jspdf){alert("PDF no disponible");return;}
+  const { jsPDF } = window.jspdf;
+
+  const p=registros.filter(r=>r.pendiente>0);
+  if(!p.length){alert("No hay pendientes");return;}
+
+  const pdf=new jsPDF();
+  let y=10,total=0;
+
+  pdf.setFontSize(14);
+  pdf.text("REPORTE DE HORAS PENDIENTES",10,y);y+=10;
+
+  p.forEach(r=>{
+    total+=r.pendiente;
+    pdf.setFontSize(11);
+    pdf.text(`Fecha: ${fechaBonita(r.fecha)}`,10,y);y+=6;
+    pdf.text(`Horario: ${r.inicio} - ${r.salida}`,10,y);y+=6;
+    pdf.text(`Detalle: ${r.detalle||"-"}`,10,y);y+=6;
+    pdf.text(`Pendiente: ₡${r.pendiente}`,10,y);y+=8;
+    if(y>270){pdf.addPage();y=10}
+  });
+
+  pdf.text(`TOTAL PENDIENTE: ₡${total}`,10,y+5);
+
+  const blob=pdf.output("blob");
+  const file=new File([blob],"horas_pendientes.pdf",{type:"application/pdf"});
+
+  if(navigator.canShare && navigator.canShare({files:[file]})){
+    await navigator.share({
+      files:[file],
+      title:"Horas pendientes",
+      text:"Reporte de horas pendientes"
+    });
+  }else{
+    pdf.save("horas_pendientes.pdf");
+  }
+}
+
 /* ===== JSON ===== */
 function exportarJSON(){
   const blob=new Blob([JSON.stringify(registros,null,2)],{type:"application/json"});
@@ -203,21 +277,16 @@ function exportarJSON(){
 }
 
 importJSONInput.onchange=e=>{
-  const file=e.target.files[0];
-  if(!file)return;
-  const reader=new FileReader();
-  reader.onload=()=>{
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{
     try{
-      const data=JSON.parse(reader.result);
-      if(!Array.isArray(data))throw "Formato inválido";
-      registros=data;
-      render();
-      alert("Datos importados correctamente");
-    }catch{
-      alert("Archivo JSON inválido");
-    }
+      const d=JSON.parse(r.result);
+      if(!Array.isArray(d))throw 0;
+      registros=d;render();alert("Datos importados");
+    }catch{alert("JSON inválido");}
   };
-  reader.readAsText(file);
+  r.readAsText(f);
 };
 
 render();
