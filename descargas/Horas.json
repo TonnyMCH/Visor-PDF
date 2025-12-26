@@ -1,257 +1,254 @@
-{
-  "moneda": "CRC",
-  "trabajos": [
-    {
-      "id": "t001",
-      "fechaISO": "2025-10-24",
-      "inicio": "18:00",
-      "salida": "20:00",
-      "horasDecimal": 2,
-      "detalle": "Tarea Planeamiento de Noviembre 2025",
-      "valorHora": 2000,
-      "abonos": [
-        { "fechaISO": "2025-10-24", "monto": 3233 }
-      ]
-    },
-    {
-      "id": "t002",
-      "fechaISO": "2025-10-26",
-      "inicio": "19:30",
-      "salida": "20:00",
-      "horasDecimal": 0.5,
-      "detalle": "Imprimir hojas Cartas a la municipalidad y dibujos de colorear",
-      "valorHora": 2000,
-      "abonos": []
-    },
-    {
-      "id": "t003",
-      "fechaISO": "2025-10-26",
-      "inicio": "19:30",
-      "salida": "20:00",
-      "horasDecimal": 0.5,
-      "detalle": "16 hojas imprimidas",
-      "valorHora": 3200,
-      "abonos": []
-    },
-    {
-      "id": "t004",
-      "fechaISO": "2025-10-31",
-      "inicio": "12:30",
-      "salida": "13:00",
-      "horasDecimal": 0.5,
-      "detalle": "Imprimir dibujos",
-      "valorHora": 2000,
-      "abonos": []
-    },
-    {
-      "id": "t005",
-      "fechaISO": "2025-10-31",
-      "inicio": "12:30",
-      "salida": "13:00",
-      "horasDecimal": 0.5,
-      "detalle": "6 hojas imprimidas",
-      "valorHora": 1200,
-      "abonos": []
-    },
-    {
-      "id": "t006",
-      "fechaISO": "2025-11-10",
-      "inicio": "06:30",
-      "salida": "07:30",
-      "horasDecimal": 1,
-      "detalle": "Imprimir hojas de Zeidy",
-      "valorHora": 2000,
-      "abonos": []
-    },
-    {
-      "id": "t007",
-      "fechaISO": "2025-11-15",
-      "inicio": "19:30",
-      "salida": "21:30",
-      "horasDecimal": 2,
-      "detalle": "Tarea de Música",
-      "valorHora": 2000,
-      "abonos": []
-    },
-    {
-      "id": "t008",
-      "fechaISO": "2025-11-18",
-      "inicio": "07:30",
-      "salida": "14:30",
-      "horasDecimal": 7,
-      "detalle": "Tarea de Música",
-      "valorHora": 2000,
-      "abonos": []
-    },
-    {
-      "id": "t009",
-      "fechaISO": "2025-11-21",
-      "inicio": "18:00",
-      "salida": "18:30",
-      "horasDecimal": 0.5,
-      "detalle": "Correos",
-      "valorHora": 2000,
-      "abonos": []
-    },
-    {
-      "id": "t010",
-      "fechaISO": "2025-11-25",
-      "inicio": "09:00",
-      "salida": "13:30",
-      "horasDecimal": 4.5,
-      "detalle": "Mapa Estratégico DBA 2026 APSD, Carta para recojo de bultos",
-      "valorHora": 2000,
-      "abonos": []
-    },
-    {
-      "id": "t011",
-      "fechaISO": "2025-11-25",
-      "inicio": "16:30",
-      "salida": "18:30",
-      "horasDecimal": 2,
-      "detalle": "Mapa Estratégico DBA 2026 APSD, Carta para recojo de bultos",
-      "valorHora": 2000,
-      "abonos": []
-    },
-    {
-      "id": "t012",
-      "fechaISO": "2025-12-02",
-      "inicio": "15:30",
-      "salida": "16:30",
-      "horasDecimal": 1,
-      "detalle": "Acomodar PDF de Música de Zeidy",
-      "valorHora": 2000,
-      "abonos": []
-    },
-    {
-      "id": "t013",
-      "fechaISO": "2025-12-03",
-      "inicio": "12:00",
-      "salida": "13:30",
-      "horasDecimal": 1.5,
-      "detalle": "Editar Mapa Estratégico DBA 2026 APSD",
-      "valorHora": 2000,
-      "abonos": []
-    },
-    {
-      "id": "t014",
-      "fechaISO": "2025-12-05",
-      "inicio": "08:00",
-      "salida": "08:30",
-      "horasDecimal": 0.5,
-      "detalle": "Título y Glosario",
-      "valorHora": 2000,
-      "abonos": []
-    },
-    {
-      "id": "t015",
-      "fechaISO": "2025-12-05",
-      "inicio": "10:00",
-      "salida": "12:00",
-      "horasDecimal": 2,
-      "detalle": "Glosario",
-      "valorHora": 2000,
-      "abonos": []
-    },
-    {
-      "id": "t016",
-      "fechaISO": "2025-12-06",
-      "inicio": "11:00",
-      "salida": "15:00",
-      "horasDecimal": 4,
-      "detalle": "Tarea del Glosario",
-      "valorHora": 2000,
-      "abonos": []
-    },
-    {
-      "id": "t017",
-      "fechaISO": "2025-12-07",
-      "inicio": "18:30",
-      "salida": "20:00",
-      "horasDecimal": 1.5,
-      "detalle": "Formulario PPD",
-      "valorHora": 2000,
-      "abonos": []
-    },
-    {
-      "id": "t018",
-      "fechaISO": "2025-12-08",
-      "inicio": "14:30",
-      "salida": "15:30",
-      "horasDecimal": 1,
-      "detalle": "Cuadro de 5 días de comidas",
-      "valorHora": 2000,
-      "abonos": []
-    },
-    {
-      "id": "t019",
-      "fechaISO": "2025-12-10",
-      "inicio": "15:00",
-      "salida": "19:30",
-      "horasDecimal": 4.5,
-      "detalle": "Cuadro de 5 días de comidas",
-      "valorHora": 2000,
-      "abonos": []
-    },
-    {
-      "id": "t020",
-      "fechaISO": "2025-12-11",
-      "inicio": "18:00",
-      "salida": "22:30",
-      "horasDecimal": 4.5,
-      "detalle": "Cuadro de 5 días de comidas enviado",
-      "valorHora": 2000,
-      "abonos": []
-    },
-    {
-      "id": "t021",
-      "fechaISO": "2025-12-17",
-      "inicio": "19:30",
-      "salida": "21:15",
-      "horasDecimal": 1.75,
-      "detalle": "Tarea nutrición recetario",
-      "valorHora": 2000,
-      "abonos": []
-    },
-    {
-      "id": "t022",
-      "fechaISO": "2025-12-18",
-      "inicio": "19:00",
-      "salida": "23:00",
-      "horasDecimal": 4,
-      "detalle": "Tarea nutrición recetario",
-      "valorHora": 2000,
-      "abonos": []
-    },
-    {
-      "id": "t023",
-      "fechaISO": "2025-12-18",
-      "inicio": "08:00",
-      "salida": "14:40",
-      "horasDecimal": 6.67,
-      "detalle": "Recurso de Amparo contra la Muni y carta a Donaciones UNA",
-      "valorHora": 2000,
-      "abonos": []
-    },
-    {
-      "id": "t024",
-      "fechaISO": "2025-12-23",
-      "inicio": "08:00",
-      "salida": "08:30",
-      "horasDecimal": 0.5,
-      "detalle": "Buscar honorarios cancelación de hipoteca",
-      "valorHora": 2000,
-      "abonos": []
-    },
-    {
-      "id": "t025",
-      "fechaISO": "2025-12-25",
-      "inicio": "18:30",
-      "salida": "19:00",
-      "horasDecimal": 0.5,
-      "detalle": "¿Coincidencias o relaciones entre hechos recientes en Dominical?",
-      "valorHora": 2000,
-      "abonos": []
-    }
-  ]
-}
+[
+  {
+    "fecha": "2025-10-24",
+    "inicio": "18:00",
+    "salida": "20:00",
+    "detalle": "Tarea Planeamiento de Noviembre 2025",
+    "horas": 2,
+    "total": 4000,
+    "pendiente": 767,
+    "abonos": [
+      { "fecha": "2025-10-24", "monto": 3233 }
+    ]
+  },
+  {
+    "fecha": "2025-10-26",
+    "inicio": "19:30",
+    "salida": "20:00",
+    "detalle": "Imprimir hojas Cartas a la municipalidad y dibujos de colorear",
+    "horas": 0.5,
+    "total": 1000,
+    "pendiente": 1000,
+    "abonos": []
+  },
+  {
+    "fecha": "2025-10-26",
+    "inicio": "19:30",
+    "salida": "20:00",
+    "detalle": "16 hojas imprimidas",
+    "horas": 0.5,
+    "total": 1600,
+    "pendiente": 1600,
+    "abonos": []
+  },
+  {
+    "fecha": "2025-10-31",
+    "inicio": "12:30",
+    "salida": "13:00",
+    "detalle": "Imprimir dibujos",
+    "horas": 0.5,
+    "total": 1000,
+    "pendiente": 1000,
+    "abonos": []
+  },
+  {
+    "fecha": "2025-10-31",
+    "inicio": "12:30",
+    "salida": "13:00",
+    "detalle": "6 hojas imprimidas",
+    "horas": 0.5,
+    "total": 600,
+    "pendiente": 600,
+    "abonos": []
+  },
+  {
+    "fecha": "2025-11-10",
+    "inicio": "06:30",
+    "salida": "07:30",
+    "detalle": "Imprimir hojas de Zeidy",
+    "horas": 1,
+    "total": 2000,
+    "pendiente": 2000,
+    "abonos": []
+  },
+  {
+    "fecha": "2025-11-15",
+    "inicio": "19:30",
+    "salida": "21:30",
+    "detalle": "Tarea de Musica",
+    "horas": 2,
+    "total": 4000,
+    "pendiente": 4000,
+    "abonos": []
+  },
+  {
+    "fecha": "2025-11-18",
+    "inicio": "07:30",
+    "salida": "14:30",
+    "detalle": "Tarea de Musica",
+    "horas": 7,
+    "total": 14000,
+    "pendiente": 14000,
+    "abonos": []
+  },
+  {
+    "fecha": "2025-11-21",
+    "inicio": "18:00",
+    "salida": "18:30",
+    "detalle": "Correos",
+    "horas": 0.5,
+    "total": 1000,
+    "pendiente": 1000,
+    "abonos": []
+  },
+  {
+    "fecha": "2025-11-25",
+    "inicio": "09:00",
+    "salida": "13:30",
+    "detalle": "Mapa Estrategico DBA 2026 APSD, Carta de la muchacha para que recoja bultos",
+    "horas": 4.5,
+    "total": 9000,
+    "pendiente": 9000,
+    "abonos": []
+  },
+  {
+    "fecha": "2025-11-25",
+    "inicio": "16:30",
+    "salida": "18:30",
+    "detalle": "Mapa Estrategico DBA 2026 APSD, Carta de la muchacha para que recoja bultos",
+    "horas": 2,
+    "total": 4000,
+    "pendiente": 4000,
+    "abonos": []
+  },
+  {
+    "fecha": "2025-12-02",
+    "inicio": "15:30",
+    "salida": "16:30",
+    "detalle": "Acomodar PDF de Musica de Zeidy",
+    "horas": 1,
+    "total": 2000,
+    "pendiente": 2000,
+    "abonos": []
+  },
+  {
+    "fecha": "2025-12-03",
+    "inicio": "12:00",
+    "salida": "13:30",
+    "detalle": "Editar Mapa Estrategico DBA 2026 APSD",
+    "horas": 1.5,
+    "total": 3000,
+    "pendiente": 3000,
+    "abonos": []
+  },
+  {
+    "fecha": "2025-12-05",
+    "inicio": "08:00",
+    "salida": "08:30",
+    "detalle": "Titulo y Glosario",
+    "horas": 0.5,
+    "total": 1000,
+    "pendiente": 1000,
+    "abonos": []
+  },
+  {
+    "fecha": "2025-12-05",
+    "inicio": "10:00",
+    "salida": "12:00",
+    "detalle": "Glosario",
+    "horas": 2,
+    "total": 4000,
+    "pendiente": 4000,
+    "abonos": []
+  },
+  {
+    "fecha": "2025-12-06",
+    "inicio": "11:00",
+    "salida": "15:00",
+    "detalle": "Tarea del Glosario",
+    "horas": 4,
+    "total": 8000,
+    "pendiente": 8000,
+    "abonos": []
+  },
+  {
+    "fecha": "2025-12-07",
+    "inicio": "18:30",
+    "salida": "20:00",
+    "detalle": "Formulario PPD",
+    "horas": 1.5,
+    "total": 3000,
+    "pendiente": 3000,
+    "abonos": []
+  },
+  {
+    "fecha": "2025-12-08",
+    "inicio": "14:30",
+    "salida": "15:30",
+    "detalle": "Cuadro de 5 días de comidas",
+    "horas": 1,
+    "total": 2000,
+    "pendiente": 2000,
+    "abonos": []
+  },
+  {
+    "fecha": "2025-12-10",
+    "inicio": "15:00",
+    "salida": "19:30",
+    "detalle": "Cuadro de 5 días de comidas",
+    "horas": 4.5,
+    "total": 9000,
+    "pendiente": 9000,
+    "abonos": []
+  },
+  {
+    "fecha": "2025-12-11",
+    "inicio": "18:00",
+    "salida": "22:30",
+    "detalle": "Cuadro de 5 días de comidas enviado",
+    "horas": 4.5,
+    "total": 9000,
+    "pendiente": 9000,
+    "abonos": []
+  },
+  {
+    "fecha": "2025-12-17",
+    "inicio": "19:30",
+    "salida": "21:15",
+    "detalle": "Tarea nutrición recetario",
+    "horas": 1.75,
+    "total": 3500,
+    "pendiente": 3500,
+    "abonos": []
+  },
+  {
+    "fecha": "2025-12-18",
+    "inicio": "19:00",
+    "salida": "23:00",
+    "detalle": "Tarea nutrición recetario",
+    "horas": 4,
+    "total": 8000,
+    "pendiente": 8000,
+    "abonos": []
+  },
+  {
+    "fecha": "2025-12-18",
+    "inicio": "08:00",
+    "salida": "14:40",
+    "detalle": "Recurso de Amparo contra la Muni y carta a Donaciones a UNA",
+    "horas": 6.67,
+    "total": 13333,
+    "pendiente": 13333,
+    "abonos": []
+  },
+  {
+    "fecha": "2025-12-23",
+    "inicio": "08:00",
+    "salida": "08:30",
+    "detalle": "Buscar los honorarios de una cancelación de hipoteca",
+    "horas": 0.5,
+    "total": 1000,
+    "pendiente": 1000,
+    "abonos": []
+  },
+  {
+    "fecha": "2025-12-25",
+    "inicio": "18:30",
+    "salida": "19:00",
+    "detalle": "¿Coincidencias o relaciones entre hechos recientes en Dominical?",
+    "horas": 0.5,
+    "total": 1000,
+    "pendiente": 1000,
+    "abonos": []
+  }
+]
