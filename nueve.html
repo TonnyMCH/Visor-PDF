@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Control de Horas de Trabajo</title>
+
+<style>
+body{
+  font-family: system-ui, Arial, sans-serif;
+  background:#f2f2f2;
+  margin:0;
+  padding:10px;
+}
+h2{
+  text-align:center;
+}
+form, table{
+  background:#fff;
+  padding:10px;
+  border-radius:10px;
+  box-shadow:0 2px 6px rgba(0,0,0,.1);
+  margin-bottom:15px;
+}
+label{
+  font-size:14px;
+  font-weight:600;
+}
+input, textarea, button{
+  width:100%;
+  padding:8px;
+  margin-top:4px;
+  margin-bottom:10px;
+  border-radius:6px;
+  border:1px solid #ccc;
+  font-size:14px;
+}
+button{
+  background:#007bff;
+  color:white;
+  font-weight:bold;
+  border:none;
+}
+button:active{
+  opacity:.8;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:13px;
+}
+th, td{
+  border-bottom:1px solid #ddd;
+  padding:6px;
+  text-align:center;
+}
+th{
+  background:#eee;
+}
+.total{
+  font-size:18px;
+  font-weight:bold;
+  text-align:right;
+}
+</style>
+</head>
+
+<body>
+
+<h2>⏱️ Horas de Trabajo</h2>
+
+<form id="form">
+  <label>Fecha</label>
+  <input type="date" id="fecha" required>
+
+  <label>Hora Inicio</label>
+  <input type="time" id="inicio" required>
+
+  <label>Hora Salida</label>
+  <input type="time" id="salida" required>
+
+  <label>Detalle</label>
+  <textarea id="detalle" placeholder="Tarea Planeamiento de Noviembre 2025"></textarea>
+
+  <label>Valor por Hora (₡)</label>
+  <input type="number" id="valorHora" value="2000" required>
+
+  <label>Abonos (₡)</label>
+  <input type="number" id="abonos" value="0">
+
+  <button type="submit">➕ Agregar Registro</button>
+</form>
+
+<table>
+<thead>
+<tr>
+  <th>Fecha</th>
+  <th>Horas</th>
+  <th>Monto</th>
+  <th>Abonos</th>
+  <th>Debe</th>
+</tr>
+</thead>
+<tbody id="tabla"></tbody>
+</table>
+
+<div class="total">
+  Total a deber: ₡<span id="totalDebe">0</span>
+</div>
+
+<script>
+let registros = JSON.parse(localStorage.getItem("horas")) || [];
+
+function calcularHoras(inicio, salida){
+  const [hi, mi] = inicio.split(":").map(Number);
+  const [hs, ms] = salida.split(":").map(Number);
+  return ((hs*60+ms)-(hi*60+mi))/60;
+}
+
+function render(){
+  const tabla = document.getElementById("tabla");
+  tabla.innerHTML = "";
+  let totalDebe = 0;
+
+  registros.forEach(r=>{
+    totalDebe += r.debe;
+    tabla.innerHTML += `
+      <tr>
+        <td>${r.fecha}</td>
+        <td>${r.horas.toFixed(2)}</td>
+        <td>₡${r.monto}</td>
+        <td>₡${r.abonos}</td>
+        <td><b>₡${r.debe}</b></td>
+      </tr>
+    `;
+  });
+
+  document.getElementById("totalDebe").textContent = totalDebe;
+  localStorage.setItem("horas", JSON.stringify(registros));
+}
+
+document.getElementById("form").addEventListener("submit", e=>{
+  e.preventDefault();
+
+  const fecha = document.getElementById("fecha").value;
+  const inicio = document.getElementById("inicio").value;
+  const salida = document.getElementById("salida").value;
+  const detalle = document.getElementById("detalle").value;
+  const valorHora = Number(document.getElementById("valorHora").value);
+  const abonos = Number(document.getElementById("abonos").value);
+
+  const horas = calcularHoras(inicio, salida);
+  const monto = Math.round(horas * valorHora);
+  const debe = monto - abonos;
+
+  registros.push({
+    fecha, inicio, salida, detalle,
+    horas, monto, abonos, debe
+  });
+
+  e.target.reset();
+  render();
+});
+
+render();
+</script>
+
+</body>
+</html>
