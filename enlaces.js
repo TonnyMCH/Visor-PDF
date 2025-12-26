@@ -7,5 +7,6 @@ const enlaces = {
     enlace6: "seis.html",    
     enlace7: "siete.html", 
     enlace8: "ocho.html", 
+    enlace9: "nueve.html", 
 
 };
