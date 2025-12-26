@@ -1,70 +1,100 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Registro Memorial de Fallecidos</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>Registro Memorial de Fallecidos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <style>
-    body {
-      margin: 0;
-      font-family: system-ui, Arial, sans-serif;
-      background: #111;
-      color: #fff;
-      padding: 15px;
-    }
+    <link rel="icon" href="imagenes/imagen7.png" type="image/png">
 
-    h2, h3 { text-align: center; }
+    <style>
+        body {
+            margin: 0;
+            font-family: system-ui, Arial, sans-serif;
+            background: #111;
+            color: #fff;
+            padding: 15px;
+        }
 
-    form, .acciones, .grupos-box, .filtros {
-      background: #1e1e1e;
-      padding: 15px;
-      border-radius: 12px;
-      margin-bottom: 15px;
-    }
+        h2, h3 {
+            text-align: center;
+        }
 
-    input, select, button {
-      width: 100%;
-      padding: 10px;
-      margin: 6px 0;
-      border-radius: 8px;
-      border: none;
-      font-size: 15px;
-    }
+        form, .acciones, .grupos-box, .filtros {
+            background: #1e1e1e;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+        }
 
-    input, select {
-      background: #2a2a2a;
-      color: #fff;
-    }
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin: 6px 0;
+            border-radius: 8px;
+            border: none;
+            font-size: 15px;
+        }
 
-    button { font-weight: bold; cursor: pointer; }
+        input, select {
+            background: #2a2a2a;
+            color: #fff;
+        }
 
-    .guardar { background: #4caf50; color: #000; }
-    .grupo-btn { background: #03a9f4; color: #000; }
-    .ordenar { background: #9c27b0; color: #fff; }
-    .exportar { background: #2196f3; color: #fff; }
-    .editar { background: #ffc107; color: #000; }
-    .eliminar { background: #f44336; color: #fff; }
+        button {
+            font-weight: bold;
+            cursor: pointer;
+        }
 
-    .card {
-      background: #1e1e1e;
-      border-radius: 12px;
-      padding: 12px;
-      margin-bottom: 12px;
-      border-left: 4px solid #9c27b0;
-    }
+        .guardar {
+            background: #4caf50;
+            color: #000;
+        }
 
-    .acciones-card {
-      display: flex;
-      gap: 8px;
-      margin-top: 8px;
-    }
+        .grupo-btn {
+            background: #03a9f4;
+            color: #000;
+        }
 
-    span {
-      color: #9c27b0;
-      font-weight: bold;
-    }
-  </style>
+        .ordenar {
+            background: #9c27b0;
+            color: #fff;
+        }
+
+        .exportar {
+            background: #2196f3;
+            color: #fff;
+        }
+
+        .editar {
+            background: #ffc107;
+            color: #000;
+        }
+
+        .eliminar {
+            background: #f44336;
+            color: #fff;
+        }
+
+        .card {
+            background: #1e1e1e;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 12px;
+            border-left: 4px solid #9c27b0;
+        }
+
+        .acciones-card {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        span {
+            color: #9c27b0;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
 
