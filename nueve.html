@@ -3,273 +3,159 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Control de Horas de Trabajo</title>
+<title>Control de Horas</title>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0d6efd">
 
 <style>
-body{font-family:system-ui;background:#f2f2f2;margin:0;padding:10px}
-h2{text-align:center}
-form,table,.acciones{
-  background:#fff;padding:10px;border-radius:10px;
-  box-shadow:0 2px 6px rgba(0,0,0,.1);margin-bottom:12px
-}
-label{font-weight:600;font-size:14px}
-input,textarea,button{
-  width:100%;padding:8px;margin:5px 0 10px;
-  border-radius:6px;border:1px solid #ccc
-}
-button{background:#007bff;color:#fff;font-weight:bold;border:none}
-button.sec{background:#28a745}
-button.danger{background:#dc3545}
+body{font-family:system-ui;background:#f5f5f5;margin:0;padding:10px}
+h2{margin-top:0}
+input,button{padding:8px;width:100%;margin:4px 0}
 table{width:100%;border-collapse:collapse;font-size:13px}
-th,td{border-bottom:1px solid #ddd;padding:6px;text-align:center}
+th,td{border:1px solid #ccc;padding:5px;text-align:center}
 th{background:#eee}
-.total{font-size:18px;font-weight:bold;text-align:right}
-.pago{color:green;font-weight:bold}
-.historial{font-size:11px;color:#555;text-align:left}
-.toggle{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.pendiente{background:#ffe0e0}
+.pagado{background:#e0ffe0}
 </style>
 </head>
 
 <body>
 
-<h2>⏱️ Control de Horas</h2>
+<h2>🕒 Control de Horas</h2>
 
-<form id="form">
-  <input type="hidden" id="editIndex">
+<input type="date" id="fecha">
+<input type="time" id="inicio">
+<input type="time" id="salida">
+<input type="text" id="detalle" placeholder="Detalle del trabajo">
+<input type="number" id="valorHora" placeholder="₡ por hora">
+<input type="number" id="abono" placeholder="Abono ₡">
 
-  <label>Fecha</label>
-  <input type="date" id="fecha" required>
+<button onclick="agregar()">➕ Agregar</button>
 
-  <label>Hora Inicio</label>
-  <input type="time" id="inicio" required>
+<label>
+<input type="checkbox" id="soloPendientes" onchange="render()"> Solo pendientes
+</label>
 
-  <label>Hora Salida</label>
-  <input type="time" id="salida" required>
-
-  <label>Detalle</label>
-  <textarea id="detalle"></textarea>
-
-  <label>Valor por Hora (₡)</label>
-  <input type="number" id="valorHora" value="2000">
-
-  <button>💾 Guardar Trabajo</button>
-</form>
-
-<div class="acciones">
-  <div class="toggle">
-    <input type="checkbox" id="soloPendientes" onchange="render()">
-    <label for="soloPendientes">Mostrar solo pendientes</label>
-  </div>
-
-  <button class="sec" onclick="exportarExcel()">📊 Excel</button>
-  <button class="sec" onclick="exportarExcelPendientes()">📊 Excel Pendientes</button>
-  <button class="sec" onclick="exportarPDF()">📄 PDF</button>
-  <button class="sec" onclick="exportarPDFPendientes()">📄 PDF Pendientes</button>
-  <button class="sec" onclick="exportarPDFPendientes()">📤 WhatsApp (PDF)</button>
-</div>
+<h3>Total a deber: ₡<span id="totalDebe">0</span></h3>
 
 <table>
 <thead>
 <tr>
-  <th>Fecha</th>
-  <th>Horas</th>
-  <th>Total</th>
-  <th>Pendiente</th>
-  <th>Abonar</th>
-  <th>Historial</th>
-  <th>Acciones</th>
+<th>Fecha</th>
+<th>Horas</th>
+<th>Monto</th>
+<th>Abonos</th>
+<th>Debe</th>
+<th>❌</th>
 </tr>
 </thead>
 <tbody id="tabla"></tbody>
 </table>
 
-<div class="total">
-  Total a deber: ₡<span id="totalDebe">0</span>
-</div>
-
 <script>
-let registros = JSON.parse(localStorage.getItem("horas")) || [];
+let db, registros=[];
 
-const calcularHoras=(i,s)=>{
-  const [hi,mi]=i.split(":").map(Number);
-  const [hs,ms]=s.split(":").map(Number);
-  return ((hs*60+ms)-(hi*60+mi))/60;
-};
-
-const fechaBonita=f=>new Date(f).toLocaleDateString("es-CR",{
-  weekday:"short",day:"2-digit",month:"short",year:"numeric"
-});
-
-const fechaHoy=()=>new Date().toLocaleDateString("es-CR");
-
-function render(){
-  tabla.innerHTML="";
-  let total=0;
-  const filtrar=soloPendientes.checked;
-
-  registros.forEach((r,i)=>{
-    if(filtrar && r.pendiente===0) return;
-    total+=r.pendiente;
-
-    tabla.innerHTML+=`
-      <tr>
-        <td>${fechaBonita(r.fecha)}</td>
-        <td>${r.horas.toFixed(2)}</td>
-        <td>₡${r.total}</td>
-        <td class="${r.pendiente===0?'pago':''}">
-          ${r.pendiente===0?'PAGADO':'₡'+r.pendiente}
-        </td>
-        <td>
-          <input type="number" min="0" placeholder="₡"
-            onkeydown="if(event.key==='Enter') abonar(${i},this)">
-        </td>
-        <td class="historial">
-          ${r.abonos.map(a=>`${a.fecha}: ₡${a.monto}`).join("<br>")}
-        </td>
-        <td>
-          <button onclick="editar(${i})">✏️</button>
-          <button class="danger" onclick="eliminar(${i})">🗑️</button>
-        </td>
-      </tr>
-    `;
-  });
-
-  totalDebe.textContent=total;
-  localStorage.setItem("horas",JSON.stringify(registros));
-}
-
-form.onsubmit=e=>{
-  e.preventDefault();
-  const horas=calcularHoras(inicio.value,salida.value);
-  const total=Math.round(horas*valorHora.value);
-
-  const data={
-    fecha:fecha.value,
-    inicio:inicio.value,
-    salida:salida.value,
-    detalle:detalle.value,
-    horas,
-    total,
-    pendiente:total,
-    abonos:[]
+/* ---------- IndexedDB ---------- */
+function abrirDB(){
+ return new Promise((res,rej)=>{
+  const r=indexedDB.open("HorasDB",1);
+  r.onupgradeneeded=e=>{
+   const db=e.target.result;
+   db.createObjectStore("registros",{keyPath:"id",autoIncrement:true});
   };
-
-  if(editIndex.value===""){
-    registros.push(data);
-  }else{
-    registros[editIndex.value]=data;
-    editIndex.value="";
-  }
-
-  form.reset();
-  render();
-};
-
-function abonar(i,input){
-  let monto=Number(input.value);
-  if(!monto||monto<=0)return;
-  if(monto>registros[i].pendiente) monto=registros[i].pendiente;
-
-  registros[i].pendiente-=monto;
-  registros[i].abonos.push({fecha:fechaHoy(),monto});
-  input.value="";
-  render();
+  r.onsuccess=e=>{db=e.target.result;res();}
+  r.onerror=()=>rej();
+ });
 }
 
-function editar(i){
-  const r=registros[i];
-  fecha.value=r.fecha;
-  inicio.value=r.inicio;
-  salida.value=r.salida;
-  detalle.value=r.detalle;
-  valorHora.value=Math.round(r.total/r.horas);
-  editIndex.value=i;
-  scrollTo({top:0,behavior:"smooth"});
+function guardarDB(){
+ const tx=db.transaction("registros","readwrite");
+ const st=tx.objectStore("registros");
+ st.clear();
+ registros.forEach(r=>st.add(r));
+}
+
+function cargarDB(){
+ return new Promise(res=>{
+  const tx=db.transaction("registros","readonly");
+  const st=tx.objectStore("registros");
+  const r=st.getAll();
+  r.onsuccess=()=>res(r.result||[]);
+ });
+}
+
+/* ---------- App ---------- */
+(async()=>{
+ await abrirDB();
+ if(navigator.storage?.persist) navigator.storage.persist();
+ registros=await cargarDB();
+ render();
+})();
+
+function horas(inicio,salida){
+ const a=new Date("1970-01-01T"+inicio);
+ const b=new Date("1970-01-01T"+salida);
+ return (b-a)/3600000;
+}
+
+function agregar(){
+ const f=fecha.value;
+ const i=inicio.value;
+ const s=salida.value;
+ const d=detalle.value;
+ const v=+valorHora.value;
+ const a=+abono.value||0;
+ if(!f||!i||!s||!v)return;
+
+ const h=horas(i,s);
+ const monto=h*v;
+ registros.push({
+  fecha:f,detalle:d,horas:h,
+  monto:monto,abonos:[{fecha:new Date().toISOString(),monto:a}]
+ });
+ guardarDB();
+ render();
 }
 
 function eliminar(i){
-  if(confirm("¿Eliminar este trabajo?")){
-    registros.splice(i,1);
-    render();
-  }
+ registros.splice(i,1);
+ guardarDB();
+ render();
 }
 
-/* ===== EXPORTACIONES ===== */
+function render(){
+ const t=document.getElementById("tabla");
+ t.innerHTML="";
+ let total=0;
+ const solo=soloPendientes.checked;
 
-function exportarExcel(){
-  const datos=registros.map(r=>({
-    Fecha:fechaBonita(r.fecha),
-    Inicio:r.inicio,
-    Salida:r.salida,
-    Detalle:r.detalle,
-    Horas:r.horas,
-    Total:r.total,
-    Pendiente:r.pendiente,
-    Abonos:r.abonos.map(a=>`${a.fecha} ₡${a.monto}`).join(" | ")
-  }));
-  const ws=XLSX.utils.json_to_sheet(datos);
-  const wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,ws,"Horas");
-  XLSX.writeFile(wb,"horas_trabajo.xlsx");
+ registros.forEach((r,i)=>{
+  const abonado=r.abonos.reduce((s,a)=>s+a.monto,0);
+  const debe=r.monto-abonado;
+  if(solo && debe<=0)return;
+  total+=debe>0?debe:0;
+
+  const tr=document.createElement("tr");
+  tr.className=debe>0?"pendiente":"pagado";
+  tr.innerHTML=`
+   <td>${new Date(r.fecha).toLocaleDateString("es-CR",{weekday:"short",day:"2-digit",month:"short",year:"numeric"})}</td>
+   <td>${r.horas}</td>
+   <td>₡${r.monto}</td>
+   <td>₡${abonado}</td>
+   <td>₡${debe}</td>
+   <td><button onclick="eliminar(${i})">❌</button></td>
+  `;
+  t.appendChild(tr);
+ });
+ totalDebe.textContent=total;
 }
+</script>
 
-function exportarExcelPendientes(){
-  const p=registros.filter(r=>r.pendiente>0);
-  if(!p.length){alert("No hay pendientes");return;}
-  const datos=p.map(r=>({
-    Fecha:fechaBonita(r.fecha),
-    Detalle:r.detalle,
-    Pendiente:r.pendiente
-  }));
-  datos.push({Fecha:"TOTAL",Pendiente:p.reduce((s,r)=>s+r.pendiente,0)});
-  const ws=XLSX.utils.json_to_sheet(datos);
-  const wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,ws,"Pendientes");
-  XLSX.writeFile(wb,"horas_pendientes.xlsx");
+<script>
+if("serviceWorker"in navigator){
+ navigator.serviceWorker.register("sw.js");
 }
-
-async function exportarPDFPendientes(){
-  const p=registros.filter(r=>r.pendiente>0);
-  if(!p.length){alert("No hay pendientes");return;}
-
-  const pdf=new jspdf.jsPDF();
-  let y=10,total=0;
-  pdf.setFontSize(14);
-  pdf.text("REPORTE DE HORAS PENDIENTES",10,y);y+=10;
-
-  p.forEach(r=>{
-    total+=r.pendiente;
-    pdf.setFontSize(11);
-    pdf.text(`Fecha: ${fechaBonita(r.fecha)}`,10,y);y+=6;
-    pdf.text(`Horario: ${r.inicio} - ${r.salida}`,10,y);y+=6;
-    pdf.text(`Detalle: ${r.detalle||"—"}`,10,y);y+=6;
-    pdf.text(`Pendiente: ₡${r.pendiente}`,10,y);y+=6;
-    y+=4; pdf.line(10,y,200,y); y+=6;
-    if(y>270){pdf.addPage();y=10}
-  });
-
-  pdf.text(`TOTAL PENDIENTE: ₡${total}`,10,y+5);
-
-  const blob=pdf.output("blob");
-  const file=new File([blob],"horas_pendientes.pdf",{type:"application/pdf"});
-
-  if(navigator.canShare&&navigator.canShare({files:[file]})){
-    await navigator.share({
-      files:[file],
-      title:"Horas pendientes",
-      text:"Reporte de horas pendientes"
-    });
-  }else{
-    pdf.save("horas_pendientes.pdf");
-  }
-}
-
-function exportarPDF(){ exportarPDFPendientes(); }
-
-render();
 </script>
 
 </body>
