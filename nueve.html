@@ -22,15 +22,27 @@ input, textarea, button{
 button{background:#007bff;color:#fff;font-weight:bold;border:none}
 button.danger{background:#dc3545}
 button.sec{background:#28a745}
+button.small{padding:4px 6px;font-size:12px}
 table{width:100%;border-collapse:collapse;font-size:13px}
 th,td{border-bottom:1px solid #ddd;padding:6px;text-align:center}
 th{background:#eee}
 .total{font-size:18px;font-weight:bold;text-align:right}
 .abono{
-  display:flex;gap:5px;margin-bottom:5px;font-size:12px
+  border:1px solid #ddd;
+  border-radius:6px;
+  padding:5px;
+  margin-bottom:5px;
+  font-size:12px;
 }
-.abono span{flex:1}
-.abono button{width:auto;padding:4px 6px}
+.abono input{
+  font-size:12px;
+  padding:4px;
+}
+.abono-actions{
+  display:flex;
+  gap:4px;
+  margin-top:4px;
+}
 </style>
 </head>
 
@@ -51,12 +63,12 @@ th{background:#eee}
   <input type="time" id="salida" required>
 
   <label>Detalle</label>
-  <textarea id="detalle"></textarea>
+  <textarea id="detalle" placeholder="Tarea Planeamiento de Noviembre 2025"></textarea>
 
   <label>Valor por Hora (₡)</label>
   <input type="number" id="valorHora" value="2000">
 
-  <button type="submit">💾 Guardar</button>
+  <button type="submit">💾 Guardar Registro</button>
 </form>
 
 <table>
@@ -80,7 +92,7 @@ th{background:#eee}
 <script>
 let registros = JSON.parse(localStorage.getItem("horas")) || [];
 
-function horas(i,s){
+function calcularHoras(i,s){
   const [hi,mi]=i.split(":").map(Number);
   const [hs,ms]=s.split(":").map(Number);
   return ((hs*60+ms)-(hi*60+mi))/60;
@@ -109,17 +121,24 @@ function render(){
         <td>
           ${r.abonos.map((a,j)=>`
             <div class="abono">
-              <span>${fechaBonita(a.fecha)}</span>
-              <span>₡${a.monto}</span>
-              <button class="danger" onclick="delAbono(${i},${j})">✖</button>
+              <input type="date" value="${a.fecha}"
+                onchange="editarAbono(${i},${j},'fecha',this.value)">
+              <input type="number" value="${a.monto}"
+                onchange="editarAbono(${i},${j},'monto',this.value)">
+              <input type="text" placeholder="Nota"
+                value="${a.nota}"
+                onchange="editarAbono(${i},${j},'nota',this.value)">
+              <div class="abono-actions">
+                <button class="danger small" onclick="delAbono(${i},${j})">✖</button>
+              </div>
             </div>
           `).join("")}
-          <button onclick="addAbono(${i})">➕ Abono</button>
+          <button class="small sec" onclick="addAbono(${i})">➕ Abono</button>
         </td>
         <td><b>₡${r.debe}</b></td>
         <td>
-          <button onclick="editar(${i})">✏️</button>
-          <button class="danger" onclick="eliminar(${i})">🗑️</button>
+          <button class="small" onclick="editar(${i})">✏️</button>
+          <button class="small danger" onclick="eliminar(${i})">🗑️</button>
         </td>
       </tr>`;
   });
@@ -137,10 +156,10 @@ form.addEventListener("submit",e=>{
     salida:salida.value,
     detalle:detalle.value,
     valorHora:+valorHora.value,
-    abonos:[]
+    abonos: editIndex.value==="" ? [] : registros[editIndex.value].abonos
   };
 
-  data.horas=horas(data.inicio,data.salida);
+  data.horas=calcularHoras(data.inicio,data.salida);
   data.monto=Math.round(data.horas*data.valorHora);
 
   if(editIndex.value==="") registros.push(data);
@@ -170,13 +189,17 @@ function eliminar(i){
 }
 
 function addAbono(i){
-  const monto=Number(prompt("Monto del abono ₡"));
-  if(!monto) return;
   registros[i].abonos.push({
     fecha:new Date().toISOString().slice(0,10),
-    monto,
+    monto:0,
     nota:""
   });
+  render();
+}
+
+function editarAbono(i,j,campo,valor){
+  if(campo==="monto") valor=Number(valor);
+  registros[i].abonos[j][campo]=valor;
   render();
 }
 
