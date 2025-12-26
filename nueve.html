@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Control de Horas</title>
+<title>Control de Horas de Trabajo</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -29,7 +29,7 @@ th{background:#eee}
 .total{font-size:18px;font-weight:bold;text-align:right}
 .pago{color:green;font-weight:bold}
 .historial{font-size:11px;color:#555;text-align:left}
-.toggle{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.toggle{display:flex;align-items:center;gap:8px;margin-bottom:8px}
 </style>
 </head>
 
@@ -63,8 +63,12 @@ th{background:#eee}
     <input type="checkbox" id="soloPendientes" onchange="render()">
     <label for="soloPendientes">Mostrar solo pendientes</label>
   </div>
+
   <button class="sec" onclick="exportarExcel()">📊 Excel</button>
+  <button class="sec" onclick="exportarExcelPendientes()">📊 Excel Pendientes</button>
   <button class="sec" onclick="exportarPDF()">📄 PDF</button>
+  <button class="sec" onclick="exportarPDFPendientes()">📄 PDF Pendientes</button>
+  <button class="sec" onclick="exportarPDFPendientes()">📤 WhatsApp (PDF)</button>
 </div>
 
 <table>
@@ -108,7 +112,6 @@ function render(){
 
   registros.forEach((r,i)=>{
     if(filtrar && r.pendiente===0) return;
-
     total+=r.pendiente;
 
     tabla.innerHTML+=`
@@ -140,7 +143,6 @@ function render(){
 
 form.onsubmit=e=>{
   e.preventDefault();
-
   const horas=calcularHoras(inicio.value,salida.value);
   const total=Math.round(horas*valorHora.value);
 
@@ -168,18 +170,11 @@ form.onsubmit=e=>{
 
 function abonar(i,input){
   let monto=Number(input.value);
-  if(!monto || monto<=0) return;
-
-  if(monto>registros[i].pendiente){
-    monto=registros[i].pendiente;
-  }
+  if(!monto||monto<=0)return;
+  if(monto>registros[i].pendiente) monto=registros[i].pendiente;
 
   registros[i].pendiente-=monto;
-  registros[i].abonos.push({
-    fecha:fechaHoy(),
-    monto
-  });
-
+  registros[i].abonos.push({fecha:fechaHoy(),monto});
   input.value="";
   render();
 }
@@ -190,7 +185,7 @@ function editar(i){
   inicio.value=r.inicio;
   salida.value=r.salida;
   detalle.value=r.detalle;
-  valorHora.value=r.total/r.horas;
+  valorHora.value=Math.round(r.total/r.horas);
   editIndex.value=i;
   scrollTo({top:0,behavior:"smooth"});
 }
@@ -202,9 +197,14 @@ function eliminar(i){
   }
 }
 
+/* ===== EXPORTACIONES ===== */
+
 function exportarExcel(){
   const datos=registros.map(r=>({
     Fecha:fechaBonita(r.fecha),
+    Inicio:r.inicio,
+    Salida:r.salida,
+    Detalle:r.detalle,
     Horas:r.horas,
     Total:r.total,
     Pendiente:r.pendiente,
@@ -216,26 +216,58 @@ function exportarExcel(){
   XLSX.writeFile(wb,"horas_trabajo.xlsx");
 }
 
-function exportarPDF(){
-  const pdf=new jspdf.jsPDF();
-  let y=10;
-  pdf.text("Control de Horas",10,y); y+=10;
+function exportarExcelPendientes(){
+  const p=registros.filter(r=>r.pendiente>0);
+  if(!p.length){alert("No hay pendientes");return;}
+  const datos=p.map(r=>({
+    Fecha:fechaBonita(r.fecha),
+    Detalle:r.detalle,
+    Pendiente:r.pendiente
+  }));
+  datos.push({Fecha:"TOTAL",Pendiente:p.reduce((s,r)=>s+r.pendiente,0)});
+  const ws=XLSX.utils.json_to_sheet(datos);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,"Pendientes");
+  XLSX.writeFile(wb,"horas_pendientes.xlsx");
+}
 
-  registros.forEach(r=>{
-    pdf.text(
-      `${fechaBonita(r.fecha)} - Pendiente ₡${r.pendiente}`,
-      10,y
-    );
-    y+=6;
-    r.abonos.forEach(a=>{
-      pdf.text(`  • ${a.fecha}: ₡${a.monto}`,12,y);
-      y+=6;
-    });
-    if(y>280){pdf.addPage();y=10}
+async function exportarPDFPendientes(){
+  const p=registros.filter(r=>r.pendiente>0);
+  if(!p.length){alert("No hay pendientes");return;}
+
+  const pdf=new jspdf.jsPDF();
+  let y=10,total=0;
+  pdf.setFontSize(14);
+  pdf.text("REPORTE DE HORAS PENDIENTES",10,y);y+=10;
+
+  p.forEach(r=>{
+    total+=r.pendiente;
+    pdf.setFontSize(11);
+    pdf.text(`Fecha: ${fechaBonita(r.fecha)}`,10,y);y+=6;
+    pdf.text(`Horario: ${r.inicio} - ${r.salida}`,10,y);y+=6;
+    pdf.text(`Detalle: ${r.detalle||"—"}`,10,y);y+=6;
+    pdf.text(`Pendiente: ₡${r.pendiente}`,10,y);y+=6;
+    y+=4; pdf.line(10,y,200,y); y+=6;
+    if(y>270){pdf.addPage();y=10}
   });
 
-  pdf.save("horas_trabajo.pdf");
+  pdf.text(`TOTAL PENDIENTE: ₡${total}`,10,y+5);
+
+  const blob=pdf.output("blob");
+  const file=new File([blob],"horas_pendientes.pdf",{type:"application/pdf"});
+
+  if(navigator.canShare&&navigator.canShare({files:[file]})){
+    await navigator.share({
+      files:[file],
+      title:"Horas pendientes",
+      text:"Reporte de horas pendientes"
+    });
+  }else{
+    pdf.save("horas_pendientes.pdf");
+  }
 }
+
+function exportarPDF(){ exportarPDFPendientes(); }
 
 render();
 </script>
