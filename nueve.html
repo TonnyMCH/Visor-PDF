@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Control de Horas de Trabajo</title>
 
+<!-- Librerías para exportar -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <style>
 body{
   font-family: system-ui, Arial, sans-serif;
@@ -12,38 +16,30 @@ body{
   margin:0;
   padding:10px;
 }
-h2{
-  text-align:center;
-}
-form, table{
+h2{text-align:center}
+form, table, .acciones{
   background:#fff;
   padding:10px;
   border-radius:10px;
   box-shadow:0 2px 6px rgba(0,0,0,.1);
-  margin-bottom:15px;
+  margin-bottom:12px;
 }
-label{
-  font-size:14px;
-  font-weight:600;
-}
+label{font-size:14px;font-weight:600}
 input, textarea, button{
   width:100%;
   padding:8px;
-  margin-top:4px;
-  margin-bottom:10px;
+  margin:5px 0 10px;
   border-radius:6px;
   border:1px solid #ccc;
-  font-size:14px;
 }
 button{
   background:#007bff;
-  color:white;
+  color:#fff;
   font-weight:bold;
   border:none;
 }
-button:active{
-  opacity:.8;
-}
+button.sec{background:#28a745}
+button.danger{background:#dc3545}
 table{
   width:100%;
   border-collapse:collapse;
@@ -54,22 +50,25 @@ th, td{
   padding:6px;
   text-align:center;
 }
-th{
-  background:#eee;
-}
+th{background:#eee}
 .total{
   font-size:18px;
   font-weight:bold;
   text-align:right;
+}
+.acciones button{
+  margin-bottom:6px;
 }
 </style>
 </head>
 
 <body>
 
-<h2>⏱️ Horas de Trabajo</h2>
+<h2>⏱️ Control de Horas</h2>
 
 <form id="form">
+  <input type="hidden" id="editIndex">
+
   <label>Fecha</label>
   <input type="date" id="fecha" required>
 
@@ -83,13 +82,18 @@ th{
   <textarea id="detalle" placeholder="Tarea Planeamiento de Noviembre 2025"></textarea>
 
   <label>Valor por Hora (₡)</label>
-  <input type="number" id="valorHora" value="2000" required>
+  <input type="number" id="valorHora" value="2000">
 
   <label>Abonos (₡)</label>
   <input type="number" id="abonos" value="0">
 
-  <button type="submit">➕ Agregar Registro</button>
+  <button type="submit">💾 Guardar</button>
 </form>
+
+<div class="acciones">
+  <button class="sec" onclick="exportarExcel()">📊 Exportar a Excel</button>
+  <button class="sec" onclick="exportarPDF()">📄 Exportar a PDF</button>
+</div>
 
 <table>
 <thead>
@@ -99,6 +103,7 @@ th{
   <th>Monto</th>
   <th>Abonos</th>
   <th>Debe</th>
+  <th>Acciones</th>
 </tr>
 </thead>
 <tbody id="tabla"></tbody>
@@ -111,56 +116,115 @@ th{
 <script>
 let registros = JSON.parse(localStorage.getItem("horas")) || [];
 
-function calcularHoras(inicio, salida){
-  const [hi, mi] = inicio.split(":").map(Number);
-  const [hs, ms] = salida.split(":").map(Number);
+function calcularHoras(i, s){
+  const [hi, mi] = i.split(":").map(Number);
+  const [hs, ms] = s.split(":").map(Number);
   return ((hs*60+ms)-(hi*60+mi))/60;
+}
+
+function fechaBonita(fecha){
+  return new Date(fecha).toLocaleDateString("es-CR",{
+    weekday:"short", day:"2-digit", month:"short", year:"numeric"
+  });
 }
 
 function render(){
   const tabla = document.getElementById("tabla");
-  tabla.innerHTML = "";
-  let totalDebe = 0;
+  tabla.innerHTML="";
+  let total=0;
 
-  registros.forEach(r=>{
-    totalDebe += r.debe;
-    tabla.innerHTML += `
+  registros.forEach((r,i)=>{
+    total+=r.debe;
+    tabla.innerHTML+=`
       <tr>
-        <td>${r.fecha}</td>
+        <td>${fechaBonita(r.fecha)}</td>
         <td>${r.horas.toFixed(2)}</td>
         <td>₡${r.monto}</td>
         <td>₡${r.abonos}</td>
         <td><b>₡${r.debe}</b></td>
+        <td>
+          <button onclick="editar(${i})">✏️</button>
+          <button class="danger" onclick="eliminar(${i})">🗑️</button>
+        </td>
       </tr>
     `;
   });
 
-  document.getElementById("totalDebe").textContent = totalDebe;
-  localStorage.setItem("horas", JSON.stringify(registros));
+  document.getElementById("totalDebe").textContent=total;
+  localStorage.setItem("horas",JSON.stringify(registros));
 }
 
-document.getElementById("form").addEventListener("submit", e=>{
+document.getElementById("form").addEventListener("submit",e=>{
   e.preventDefault();
 
-  const fecha = document.getElementById("fecha").value;
-  const inicio = document.getElementById("inicio").value;
-  const salida = document.getElementById("salida").value;
-  const detalle = document.getElementById("detalle").value;
-  const valorHora = Number(document.getElementById("valorHora").value);
-  const abonos = Number(document.getElementById("abonos").value);
+  const data={
+    fecha:fecha.value,
+    inicio:inicio.value,
+    salida:salida.value,
+    detalle:detalle.value,
+    valorHora:+valorHora.value,
+    abonos:+abonos.value
+  };
 
-  const horas = calcularHoras(inicio, salida);
-  const monto = Math.round(horas * valorHora);
-  const debe = monto - abonos;
+  data.horas=calcularHoras(data.inicio,data.salida);
+  data.monto=Math.round(data.horas*data.valorHora);
+  data.debe=data.monto-data.abonos;
 
-  registros.push({
-    fecha, inicio, salida, detalle,
-    horas, monto, abonos, debe
-  });
+  if(editIndex.value===""){
+    registros.push(data);
+  }else{
+    registros[editIndex.value]=data;
+    editIndex.value="";
+  }
 
   e.target.reset();
   render();
 });
+
+function editar(i){
+  const r=registros[i];
+  fecha.value=r.fecha;
+  inicio.value=r.inicio;
+  salida.value=r.salida;
+  detalle.value=r.detalle;
+  valorHora.value=r.valorHora;
+  abonos.value=r.abonos;
+  editIndex.value=i;
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function eliminar(i){
+  if(confirm("¿Eliminar este registro?")){
+    registros.splice(i,1);
+    render();
+  }
+}
+
+function exportarExcel(){
+  const ws=XLSX.utils.json_to_sheet(registros);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,"Horas");
+  XLSX.writeFile(wb,"horas_trabajo.xlsx");
+}
+
+function exportarPDF(){
+  const {jsPDF}=window.jspdf;
+  const pdf=new jsPDF();
+  let y=10;
+  pdf.text("Control de Horas de Trabajo",10,y);
+  y+=10;
+
+  registros.forEach(r=>{
+    pdf.text(
+      `${fechaBonita(r.fecha)} | Horas:${r.horas.toFixed(2)} | Debe: ₡${r.debe}`,
+      10,y
+    );
+    y+=8;
+    if(y>280){pdf.addPage();y=10;}
+  });
+
+  pdf.save("horas_trabajo.pdf");
+}
 
 render();
 </script>
