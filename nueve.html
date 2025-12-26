@@ -26,7 +26,7 @@ button.danger{background:#dc3545}
 table{width:100%;border-collapse:collapse;font-size:13px}
 th,td{border-bottom:1px solid #ddd;padding:6px;text-align:center}
 th{background:#eee}
-.total{font-size:18px;font-weight:bold;text-align:right}
+.total{font-size:20px;font-weight:bold;text-align:right}
 .pago{color:green;font-weight:bold}
 .historial{font-size:11px;color:#555;text-align:left}
 .toggle{display:flex;align-items:center;gap:8px;margin-bottom:8px}
@@ -89,7 +89,7 @@ th{background:#eee}
 </div>
 
 <script>
-/* ================= FIX PWA ================= */
+/* ===== FIX PWA ===== */
 let registros = JSON.parse(localStorage.getItem("horas")) || [];
 
 const tabla = document.getElementById("tabla");
@@ -103,7 +103,7 @@ const salida = document.getElementById("salida");
 const detalle = document.getElementById("detalle");
 const valorHora = document.getElementById("valorHora");
 const editIndex = document.getElementById("editIndex");
-/* =========================================== */
+/* =================== */
 
 const calcularHoras=(i,s)=>{
   const [hi,mi]=i.split(":").map(Number);
@@ -117,16 +117,19 @@ const fechaBonita=f=>new Date(f).toLocaleDateString("es-CR",{
 
 const fechaHoy=()=>new Date().toLocaleDateString("es-CR");
 
+/* 🔧 RENDER CORREGIDO */
 function render(){
-  tabla.innerHTML="";
-  let total=0;
+  tabla.innerHTML = "";
+
+  /* TOTAL REAL (SIN FILTRO) */
+  const totalReal = registros.reduce((s,r)=>s + r.pendiente, 0);
+  totalDebe.textContent = totalReal;
 
   registros.forEach((r,i)=>{
-    if(soloPendientes.checked && r.pendiente===0) return;
+    /* FILTRO SOLO VISUAL */
+    if(soloPendientes.checked && r.pendiente === 0) return;
 
-    total+=r.pendiente;
-
-    tabla.innerHTML+=`
+    tabla.innerHTML += `
       <tr>
         <td>${fechaBonita(r.fecha)}</td>
         <td>${r.horas.toFixed(2)}</td>
@@ -149,8 +152,7 @@ function render(){
     `;
   });
 
-  totalDebe.textContent = total;
-  localStorage.setItem("horas",JSON.stringify(registros));
+  localStorage.setItem("horas", JSON.stringify(registros));
 }
 
 form.addEventListener("submit",e=>{
