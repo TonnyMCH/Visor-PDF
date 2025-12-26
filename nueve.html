@@ -9,40 +9,27 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
-body{font-family:system-ui;background:#f2f2f2;padding:10px}
+body{font-family:system-ui;background:#f2f2f2;margin:0;padding:10px}
 h2{text-align:center}
-form, table, .card{
+form,table,.acciones{
   background:#fff;padding:10px;border-radius:10px;
   box-shadow:0 2px 6px rgba(0,0,0,.1);margin-bottom:12px
 }
 label{font-weight:600;font-size:14px}
-input, textarea, button{
-  width:100%;padding:8px;margin:5px 0;border-radius:6px;border:1px solid #ccc
+input,textarea,button{
+  width:100%;padding:8px;margin:5px 0 10px;
+  border-radius:6px;border:1px solid #ccc
 }
 button{background:#007bff;color:#fff;font-weight:bold;border:none}
-button.danger{background:#dc3545}
 button.sec{background:#28a745}
-button.small{padding:4px 6px;font-size:12px}
+button.danger{background:#dc3545}
 table{width:100%;border-collapse:collapse;font-size:13px}
 th,td{border-bottom:1px solid #ddd;padding:6px;text-align:center}
 th{background:#eee}
 .total{font-size:18px;font-weight:bold;text-align:right}
-.abono{
-  border:1px solid #ddd;
-  border-radius:6px;
-  padding:5px;
-  margin-bottom:5px;
-  font-size:12px;
-}
-.abono input{
-  font-size:12px;
-  padding:4px;
-}
-.abono-actions{
-  display:flex;
-  gap:4px;
-  margin-top:4px;
-}
+.pago{color:green;font-weight:bold}
+.historial{font-size:11px;color:#555;text-align:left}
+.toggle{display:flex;align-items:center;gap:8px;margin-bottom:10px}
 </style>
 </head>
 
@@ -63,22 +50,32 @@ th{background:#eee}
   <input type="time" id="salida" required>
 
   <label>Detalle</label>
-  <textarea id="detalle" placeholder="Tarea Planeamiento de Noviembre 2025"></textarea>
+  <textarea id="detalle"></textarea>
 
   <label>Valor por Hora (₡)</label>
   <input type="number" id="valorHora" value="2000">
 
-  <button type="submit">💾 Guardar Registro</button>
+  <button>💾 Guardar Trabajo</button>
 </form>
+
+<div class="acciones">
+  <div class="toggle">
+    <input type="checkbox" id="soloPendientes" onchange="render()">
+    <label for="soloPendientes">Mostrar solo pendientes</label>
+  </div>
+  <button class="sec" onclick="exportarExcel()">📊 Excel</button>
+  <button class="sec" onclick="exportarPDF()">📄 PDF</button>
+</div>
 
 <table>
 <thead>
 <tr>
   <th>Fecha</th>
   <th>Horas</th>
-  <th>Monto</th>
-  <th>Abonos</th>
-  <th>Debe</th>
+  <th>Total</th>
+  <th>Pendiente</th>
+  <th>Abonar</th>
+  <th>Historial</th>
   <th>Acciones</th>
 </tr>
 </thead>
@@ -92,83 +89,100 @@ th{background:#eee}
 <script>
 let registros = JSON.parse(localStorage.getItem("horas")) || [];
 
-function calcularHoras(i,s){
+const calcularHoras=(i,s)=>{
   const [hi,mi]=i.split(":").map(Number);
   const [hs,ms]=s.split(":").map(Number);
   return ((hs*60+ms)-(hi*60+mi))/60;
-}
+};
 
-function fechaBonita(f){
-  return new Date(f).toLocaleDateString("es-CR",
-    {weekday:"short",day:"2-digit",month:"short",year:"numeric"});
-}
+const fechaBonita=f=>new Date(f).toLocaleDateString("es-CR",{
+  weekday:"short",day:"2-digit",month:"short",year:"numeric"
+});
+
+const fechaHoy=()=>new Date().toLocaleDateString("es-CR");
 
 function render(){
-  const tabla=document.getElementById("tabla");
   tabla.innerHTML="";
-  let totalGeneral=0;
+  let total=0;
+  const filtrar=soloPendientes.checked;
 
   registros.forEach((r,i)=>{
-    r.totalAbonos=r.abonos.reduce((s,a)=>s+a.monto,0);
-    r.debe=r.monto-r.totalAbonos;
-    totalGeneral+=r.debe;
+    if(filtrar && r.pendiente===0) return;
+
+    total+=r.pendiente;
 
     tabla.innerHTML+=`
       <tr>
         <td>${fechaBonita(r.fecha)}</td>
         <td>${r.horas.toFixed(2)}</td>
-        <td>₡${r.monto}</td>
-        <td>
-          ${r.abonos.map((a,j)=>`
-            <div class="abono">
-              <input type="date" value="${a.fecha}"
-                onchange="editarAbono(${i},${j},'fecha',this.value)">
-              <input type="number" value="${a.monto}"
-                onchange="editarAbono(${i},${j},'monto',this.value)">
-              <input type="text" placeholder="Nota"
-                value="${a.nota}"
-                onchange="editarAbono(${i},${j},'nota',this.value)">
-              <div class="abono-actions">
-                <button class="danger small" onclick="delAbono(${i},${j})">✖</button>
-              </div>
-            </div>
-          `).join("")}
-          <button class="small sec" onclick="addAbono(${i})">➕ Abono</button>
+        <td>₡${r.total}</td>
+        <td class="${r.pendiente===0?'pago':''}">
+          ${r.pendiente===0?'PAGADO':'₡'+r.pendiente}
         </td>
-        <td><b>₡${r.debe}</b></td>
         <td>
-          <button class="small" onclick="editar(${i})">✏️</button>
-          <button class="small danger" onclick="eliminar(${i})">🗑️</button>
+          <input type="number" min="0" placeholder="₡"
+            onkeydown="if(event.key==='Enter') abonar(${i},this)">
         </td>
-      </tr>`;
+        <td class="historial">
+          ${r.abonos.map(a=>`${a.fecha}: ₡${a.monto}`).join("<br>")}
+        </td>
+        <td>
+          <button onclick="editar(${i})">✏️</button>
+          <button class="danger" onclick="eliminar(${i})">🗑️</button>
+        </td>
+      </tr>
+    `;
   });
 
-  totalDebe.textContent=totalGeneral;
+  totalDebe.textContent=total;
   localStorage.setItem("horas",JSON.stringify(registros));
 }
 
-form.addEventListener("submit",e=>{
+form.onsubmit=e=>{
   e.preventDefault();
+
+  const horas=calcularHoras(inicio.value,salida.value);
+  const total=Math.round(horas*valorHora.value);
 
   const data={
     fecha:fecha.value,
     inicio:inicio.value,
     salida:salida.value,
     detalle:detalle.value,
-    valorHora:+valorHora.value,
-    abonos: editIndex.value==="" ? [] : registros[editIndex.value].abonos
+    horas,
+    total,
+    pendiente:total,
+    abonos:[]
   };
 
-  data.horas=calcularHoras(data.inicio,data.salida);
-  data.monto=Math.round(data.horas*data.valorHora);
+  if(editIndex.value===""){
+    registros.push(data);
+  }else{
+    registros[editIndex.value]=data;
+    editIndex.value="";
+  }
 
-  if(editIndex.value==="") registros.push(data);
-  else registros[editIndex.value]=data;
-
-  editIndex.value="";
-  e.target.reset();
+  form.reset();
   render();
-});
+};
+
+function abonar(i,input){
+  let monto=Number(input.value);
+  if(!monto || monto<=0) return;
+
+  if(monto>registros[i].pendiente){
+    monto=registros[i].pendiente;
+  }
+
+  registros[i].pendiente-=monto;
+  registros[i].abonos.push({
+    fecha:fechaHoy(),
+    monto
+  });
+
+  input.value="";
+  render();
+}
 
 function editar(i){
   const r=registros[i];
@@ -176,36 +190,51 @@ function editar(i){
   inicio.value=r.inicio;
   salida.value=r.salida;
   detalle.value=r.detalle;
-  valorHora.value=r.valorHora;
+  valorHora.value=r.total/r.horas;
   editIndex.value=i;
   scrollTo({top:0,behavior:"smooth"});
 }
 
 function eliminar(i){
-  if(confirm("¿Eliminar registro completo?")){
+  if(confirm("¿Eliminar este trabajo?")){
     registros.splice(i,1);
     render();
   }
 }
 
-function addAbono(i){
-  registros[i].abonos.push({
-    fecha:new Date().toISOString().slice(0,10),
-    monto:0,
-    nota:""
+function exportarExcel(){
+  const datos=registros.map(r=>({
+    Fecha:fechaBonita(r.fecha),
+    Horas:r.horas,
+    Total:r.total,
+    Pendiente:r.pendiente,
+    Abonos:r.abonos.map(a=>`${a.fecha} ₡${a.monto}`).join(" | ")
+  }));
+  const ws=XLSX.utils.json_to_sheet(datos);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,"Horas");
+  XLSX.writeFile(wb,"horas_trabajo.xlsx");
+}
+
+function exportarPDF(){
+  const pdf=new jspdf.jsPDF();
+  let y=10;
+  pdf.text("Control de Horas",10,y); y+=10;
+
+  registros.forEach(r=>{
+    pdf.text(
+      `${fechaBonita(r.fecha)} - Pendiente ₡${r.pendiente}`,
+      10,y
+    );
+    y+=6;
+    r.abonos.forEach(a=>{
+      pdf.text(`  • ${a.fecha}: ₡${a.monto}`,12,y);
+      y+=6;
+    });
+    if(y>280){pdf.addPage();y=10}
   });
-  render();
-}
 
-function editarAbono(i,j,campo,valor){
-  if(campo==="monto") valor=Number(valor);
-  registros[i].abonos[j][campo]=valor;
-  render();
-}
-
-function delAbono(i,j){
-  registros[i].abonos.splice(j,1);
-  render();
+  pdf.save("horas_trabajo.pdf");
 }
 
 render();
