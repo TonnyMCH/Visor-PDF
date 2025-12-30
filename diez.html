@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calendario de Lectores</title>
+
+    <link rel="icon" href="imagenes/imagen10.jpg" type="image/jpg">
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #f2f2f2;
+    padding: 15px;
+}
+h2 {
+    text-align: center;
+}
+.card {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+.servicio {
+    margin-bottom: 8px;
+}
+.falta {
+    color: red;
+    font-weight: bold;
+}
+.ok {
+    color: green;
+}
+</style>
+</head>
+
+<body>
+
+<h2>📖 Lectores del Día</h2>
+<div class="card" id="resultado">Cargando…</div>
+
+<script>
+// ================= DATOS =================
+const calendario = {
+    "Sábado": {
+        1: { "Monición": "Michelle", "1ra lectura": "Ana", "Salmo": "Patricia", "2da lectura": "Jenny" },
+        2: { "Monición": "Patricia", "1ra lectura": "Jenny", "Salmo": "Ana", "2da lectura": "?" },
+        3: { "Monición": "Jenny", "1ra lectura": "?", "Salmo": "Michelle", "2da lectura": "Patricia" },
+        4: { "Monición": "Patricia", "1ra lectura": "Jenny", "Salmo": "Ana", "2da lectura": "Anthony" },
+        5: { "Monición": "Michelle", "1ra lectura": "Patricia", "Salmo": "Jenny", "2da lectura": "Ana" }
+    },
+    "Domingo": {
+        1: { "Monición": "Carolina", "1ra lectura": "Anthony", "Salmo": "?", "2da lectura": "?" },
+        2: { "Monición": "Elida", "1ra lectura": "Carolina", "Salmo": "Miriam", "2da lectura": "Margarita" },
+        3: { "Monición": "?", "1ra lectura": "?", "Salmo": "Anthony", "2da lectura": "?" },
+        4: { "Monición": "Carolina", "1ra lectura": "Ana", "Salmo": "Margarita", "2da lectura": "Miriam" },
+        5: { "Monición": "Elida", "1ra lectura": "Anthony", "Salmo": "Carolina", "2da lectura": "Ana" }
+    }
+};
+
+// ================= FECHA =================
+const hoy = new Date();
+const diaSemana = hoy.getDay(); // 6 sábado, 0 domingo
+const contenedor = document.getElementById("resultado");
+
+if (diaSemana !== 6 && diaSemana !== 0) {
+    contenedor.innerHTML = "📅 Hoy no hay servicio (solo sábados y domingos).";
+} else {
+
+    const nombreDia = diaSemana === 6 ? "Sábado" : "Domingo";
+
+    function numeroSemana(fecha) {
+        const inicioMes = new Date(fecha.getFullYear(), fecha.getMonth(), 1);
+        let contador = 0;
+
+        for (let d = new Date(inicioMes); d <= fecha; d.setDate(d.getDate() + 1)) {
+            if (d.getDay() === fecha.getDay()) contador++;
+        }
+        return contador;
+    }
+
+    const semana = numeroSemana(new Date(hoy));
+    const datos = calendario[nombreDia][semana];
+
+    let html = `<strong>${nombreDia} ${semana}° del mes</strong><br><br>`;
+    let alerta = `${nombreDia} ${semana}° del mes\n\n`;
+
+    for (let servicio in datos) {
+        if (datos[servicio] === "?") {
+            html += `<div class="servicio falta">${servicio}: ❌ Sin lector</div>`;
+            alerta += `${servicio}: SIN LECTOR\n`;
+        } else {
+            html += `<div class="servicio ok">${servicio}: ${datos[servicio]}</div>`;
+            alerta += `${servicio}: ${datos[servicio]}\n`;
+        }
+    }
+
+    contenedor.innerHTML = html;
+    alert(alerta);
+}
+</script>
+
+</body>
+</html>
