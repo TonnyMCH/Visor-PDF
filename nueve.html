@@ -1,109 +1,37 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <link rel="icon" href="imagenes/imagen9.png" type="image/png">
+<title>Control de Horas</title>
 
-    <title>Control de Horas</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-    <style>
-        body {
-            font-family: system-ui;
-            background: #f2f2f2;
-            margin: 0;
-            padding: 10px
-        }
-
-        h2 {
-            text-align: center
-        }
-
-        form, table, .acciones {
-            background: #fff;
-            padding: 10px;
-            border-radius: 10px;
-            box-shadow: 0 2px 6px rgba(0,0,0,.1);
-            margin-bottom: 12px
-        }
-
-        label {
-            font-weight: 600;
-            font-size: 14px
-        }
-
-        input, textarea, button {
-            width: 100%;
-            padding: 8px;
-            margin: 5px 0 10px;
-            border-radius: 6px;
-            border: 1px solid #ccc
-        }
-
-        button {
-            background: #007bff;
-            color: #fff;
-            font-weight: bold;
-            border: none
-        }
-
-            button.sec {
-                background: #28a745
-            }
-
-            button.warn {
-                background: #ffc107;
-                color: #000
-            }
-
-            button.danger {
-                background: #dc3545
-            }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px
-        }
-
-        th, td {
-            border-bottom: 1px solid #ddd;
-            padding: 6px;
-            text-align: center
-        }
-
-        th {
-            background: #eee
-        }
-
-        .total {
-            font-size: 20px;
-            font-weight: bold;
-            text-align: right
-        }
-
-        .pago {
-            color: green;
-            font-weight: bold
-        }
-
-        .historial {
-            font-size: 11px;
-            color: #555;
-            text-align: left
-        }
-
-        .toggle {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 8px
-        }
-    </style>
+<style>
+body{font-family:system-ui;background:#f2f2f2;margin:0;padding:10px}
+h2{text-align:center}
+form,table,.acciones{
+  background:#fff;padding:10px;border-radius:10px;
+  box-shadow:0 2px 6px rgba(0,0,0,.1);margin-bottom:12px
+}
+input,textarea,button{
+  width:100%;padding:8px;margin:5px 0 10px;
+  border-radius:6px;border:1px solid #ccc
+}
+button{background:#007bff;color:#fff;font-weight:bold;border:none}
+button.sec{background:#28a745}
+button.warn{background:#ffc107;color:#000}
+button.danger{background:#dc3545}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{border-bottom:1px solid #ddd;padding:6px;text-align:center}
+th{background:#eee}
+.total{font-size:20px;font-weight:bold;text-align:right}
+.pago{color:green;font-weight:bold}
+.historial{font-size:11px;color:#555;text-align:left}
+.toggle{display:flex;gap:8px;align-items:center}
+</style>
 </head>
 
 <body>
@@ -111,79 +39,62 @@
 <h2>⏱️ Control de Horas</h2>
 
 <form id="form">
-  <input type="hidden" id="editIndex">
+<input type="hidden" id="editIndex">
 
-  <label>Fecha</label>
-  <input type="date" id="fecha" required>
+<label>Fecha</label>
+<input type="date" id="fecha" required>
 
-  <label>Hora Inicio</label>
-  <input type="time" id="inicio" required>
+<label>Hora Inicio</label>
+<input type="time" id="inicio" required>
 
-  <label>Hora Salida</label>
-  <input type="time" id="salida" required>
+<label>Hora Salida</label>
+<input type="time" id="salida" required>
 
-  <label>Detalle</label>
-  <textarea id="detalle"></textarea>
+<label>Detalle</label>
+<textarea id="detalle"></textarea>
 
-  <label>Valor por Hora (₡)</label>
-  <input type="number" id="valorHora" value="2000">
+<label>Valor por Hora (₡)</label>
+<input type="number" id="valorHora" value="2000">
 
-  <button type="submit">💾 Guardar Trabajo</button>
+<button type="submit">💾 Guardar Trabajo</button>
 </form>
 
 <div class="acciones">
-  <div class="toggle">
-    <input type="checkbox" id="soloPendientes">
-    <label for="soloPendientes">Mostrar solo pendientes</label>
-  </div>
+<div class="toggle">
+<input type="checkbox" id="soloPendientes">
+<label for="soloPendientes">Mostrar solo pendientes</label>
+</div>
 
-  <button type="button" class="sec" onclick="exportarExcel()">📊 Excel</button>
-  <button type="button" class="sec" onclick="exportarExcelPendientes()">📊 Excel Pendientes</button>
-  <button type="button" class="sec" onclick="exportarPDFPendientes()">📤 WhatsApp (PDF)</button>
-
-  <hr>
-
-  <button type="button" class="warn" onclick="exportarJSON()">💾 Exportar JSON</button>
-  <button type="button" class="warn" onclick="document.getElementById('importJSON').click()">📥 Importar JSON</button>
-  <input type="file" id="importJSON" accept=".json" hidden>
+<button class="sec" onclick="exportarExcel()">📊 Excel</button>
+<button class="sec" onclick="exportarExcelPendientes()">📊 Excel Pendientes</button>
+<button class="sec" onclick="exportarPDFPendientes()">📤 WhatsApp (PDF)</button>
 </div>
 
 <table>
 <thead>
 <tr>
-  <th>Fecha</th>
-  <th>Horas</th>
-  <th>Total</th>
-  <th>Pendiente</th>
-  <th>Abonar</th>
-  <th>Historial</th>
-  <th>Acciones</th>
+<th>Fecha</th>
+<th>Horas</th>
+<th>Total</th>
+<th>Pendiente</th>
+<th>Abonar</th>
+<th>Historial</th>
+<th>Acciones</th>
 </tr>
 </thead>
 <tbody id="tabla"></tbody>
 </table>
 
 <div class="total">
-  Total a deber: ₡<span id="totalDebe">0</span>
+Total a deber: ₡<span id="totalDebe">0</span>
 </div>
 
 <script>
-/* ===== FIX PWA ===== */
-let registros = JSON.parse(localStorage.getItem("horas")) || [];
+let registros=JSON.parse(localStorage.getItem("horas"))||[];
 
-const tabla = document.getElementById("tabla");
-const form = document.getElementById("form");
-const totalDebe = document.getElementById("totalDebe");
-const soloPendientes = document.getElementById("soloPendientes");
-
-const fecha = document.getElementById("fecha");
-const inicio = document.getElementById("inicio");
-const salida = document.getElementById("salida");
-const detalle = document.getElementById("detalle");
-const valorHora = document.getElementById("valorHora");
-const editIndex = document.getElementById("editIndex");
-const importJSONInput = document.getElementById("importJSON");
-/* =================== */
+const tabla=document.getElementById("tabla");
+const totalDebe=document.getElementById("totalDebe");
+const soloPendientes=document.getElementById("soloPendientes");
 
 const calcularHoras=(i,s)=>{
   const [hi,mi]=i.split(":").map(Number);
@@ -191,176 +102,97 @@ const calcularHoras=(i,s)=>{
   return ((hs*60+ms)-(hi*60+mi))/60;
 };
 
-const fechaBonita=f=>new Date(f).toLocaleDateString("es-CR",{
-  weekday:"short",day:"2-digit",month:"short",year:"numeric"
-});
+const fechaBonita=f=>new Date(f).toLocaleDateString("es-CR",
+{weekday:"short",day:"2-digit",month:"short",year:"numeric"});
 
 const fechaHoy=()=>new Date().toLocaleDateString("es-CR");
 
 function render(){
-  tabla.innerHTML="";
-  totalDebe.textContent = registros.reduce((s,r)=>s+r.pendiente,0);
+tabla.innerHTML="";
+totalDebe.textContent=registros.reduce((s,r)=>s+r.pendiente,0);
 
-  registros.forEach((r,i)=>{
-    if(soloPendientes.checked && r.pendiente===0) return;
+registros.forEach((r,i)=>{
+if(soloPendientes.checked && r.pendiente===0)return;
 
-    tabla.innerHTML+=`
-      <tr>
-        <td>${fechaBonita(r.fecha)}</td>
-        <td>${r.horas.toFixed(2)}</td>
-        <td>₡${r.total}</td>
-        <td class="${r.pendiente===0?'pago':''}">
-          ${r.pendiente===0?'PAGADO':'₡'+r.pendiente}
-        </td>
-        <td>
-          <input type="number" min="0" placeholder="₡"
-            onkeydown="if(event.key==='Enter')abonar(${i},this)">
-        </td>
-        <td class="historial">
-          ${r.abonos.map(a=>`${a.fecha}: ₡${a.monto}`).join("<br>")}
-        </td>
-        <td>
-          <button type="button" onclick="editar(${i})">✏️</button>
-          <button type="button" class="danger" onclick="eliminar(${i})">🗑️</button>
-        </td>
-      </tr>`;
-  });
+tabla.innerHTML+=`
+<tr>
+<td>${fechaBonita(r.fecha)}</td>
+<td>${r.horas.toFixed(2)}</td>
+<td>₡${r.total}</td>
+<td class="${r.pendiente===0?'pago':''}">
+${r.pendiente===0?'PAGADO':'₡'+r.pendiente}
+</td>
+<td>
+<input type="number" min="0" placeholder="₡"
+inputmode="numeric"
+enterkeyhint="done"
+onblur="abonar(${i},this)">
+</td>
+<td class="historial">
+${r.abonos.map(a=>`${a.fecha}: ₡${a.monto}`).join("<br>")}
+</td>
+<td>
+<button onclick="editar(${i})">✏️</button>
+<button class="danger" onclick="eliminar(${i})">🗑️</button>
+</td>
+</tr>`;
+});
 
-  localStorage.setItem("horas",JSON.stringify(registros));
+localStorage.setItem("horas",JSON.stringify(registros));
 }
 
 form.onsubmit=e=>{
-  e.preventDefault();
-  const horas=calcularHoras(inicio.value,salida.value);
-  const total=Math.round(horas*valorHora.value);
+e.preventDefault();
+const horas=calcularHoras(inicio.value,salida.value);
+const total=Math.round(horas*valorHora.value);
 
-  const data={
-    fecha:fecha.value,inicio:inicio.value,salida:salida.value,
-    detalle:detalle.value,horas,total,pendiente:total,abonos:[]
-  };
+const data={
+fecha:fecha.value,
+inicio:inicio.value,
+salida:salida.value,
+detalle:detalle.value,
+horas,total,pendiente:total,abonos:[]
+};
 
-  if(editIndex.value==="") registros.push(data);
-  else {registros[editIndex.value]=data;editIndex.value="";}
+editIndex.value===""
+? registros.push(data)
+: registros[editIndex.value]=data;
 
-  form.reset();render();
+editIndex.value="";
+form.reset();
+render();
 };
 
 function abonar(i,input){
-  let m=+input.value;if(!m||m<=0)return;
-  if(m>registros[i].pendiente)m=registros[i].pendiente;
-  registros[i].pendiente-=m;
-  registros[i].abonos.push({fecha:fechaHoy(),monto:m});
-  input.value="";render();
+let m=+input.value;
+if(!m||m<=0)return;
+if(m>registros[i].pendiente)m=registros[i].pendiente;
+
+registros[i].pendiente-=m;
+registros[i].abonos.push({fecha:fechaHoy(),monto:m});
+input.value="";
+render();
 }
 
 function editar(i){
-  const r=registros[i];
-  fecha.value=r.fecha;inicio.value=r.inicio;salida.value=r.salida;
-  detalle.value=r.detalle;valorHora.value=Math.round(r.total/r.horas);
-  editIndex.value=i;scrollTo({top:0,behavior:"smooth"});
+const r=registros[i];
+fecha.value=r.fecha;
+inicio.value=r.inicio;
+salida.value=r.salida;
+detalle.value=r.detalle;
+valorHora.value=Math.round(r.total/r.horas);
+editIndex.value=i;
+scrollTo({top:0,behavior:"smooth"});
 }
 
 function eliminar(i){
-  if(confirm("¿Eliminar este trabajo?")){registros.splice(i,1);render();}
+if(confirm("¿Eliminar este trabajo?")){
+registros.splice(i,1);
+render();
+}
 }
 
-/* ===== EXCEL ===== */
-function exportarExcel(){
-  if(typeof XLSX==="undefined"){alert("Excel no disponible");return;}
-  const datos=registros.map(r=>({
-    Fecha:fechaBonita(r.fecha),
-    Inicio:r.inicio,
-    Salida:r.salida,
-    Detalle:r.detalle,
-    Horas:r.horas,
-    Total:r.total,
-    Pendiente:r.pendiente,
-    Abonos:r.abonos.map(a=>`${a.fecha} ₡${a.monto}`).join(" | ")
-  }));
-  const ws=XLSX.utils.json_to_sheet(datos);
-  const wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,ws,"Horas");
-  XLSX.writeFile(wb,"horas_trabajo.xlsx");
-}
-
-function exportarExcelPendientes(){
-  if(typeof XLSX==="undefined"){alert("Excel no disponible");return;}
-  const p=registros.filter(r=>r.pendiente>0);
-  if(!p.length){alert("No hay pendientes");return;}
-  const datos=p.map(r=>({
-    Fecha:fechaBonita(r.fecha),
-    Detalle:r.detalle,
-    Pendiente:r.pendiente
-  }));
-  datos.push({Fecha:"TOTAL",Pendiente:p.reduce((s,r)=>s+r.pendiente,0)});
-  const ws=XLSX.utils.json_to_sheet(datos);
-  const wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,ws,"Pendientes");
-  XLSX.writeFile(wb,"horas_pendientes.xlsx");
-}
-
-/* ===== PDF ===== */
-async function exportarPDFPendientes(){
-  if(!window.jspdf){alert("PDF no disponible");return;}
-  const { jsPDF } = window.jspdf;
-
-  const p=registros.filter(r=>r.pendiente>0);
-  if(!p.length){alert("No hay pendientes");return;}
-
-  const pdf=new jsPDF();
-  let y=10,total=0;
-
-  pdf.setFontSize(14);
-  pdf.text("REPORTE DE HORAS PENDIENTES",10,y);y+=10;
-
-  p.forEach(r=>{
-    total+=r.pendiente;
-    pdf.setFontSize(11);
-    pdf.text(`Fecha: ${fechaBonita(r.fecha)}`,10,y);y+=6;
-    pdf.text(`Horario: ${r.inicio} - ${r.salida}`,10,y);y+=6;
-    pdf.text(`Detalle: ${r.detalle||"-"}`,10,y);y+=6;
-    pdf.text(`Pendiente: ₡${r.pendiente}`,10,y);y+=8;
-    if(y>270){pdf.addPage();y=10}
-  });
-
-  pdf.text(`TOTAL PENDIENTE: ₡${total}`,10,y+5);
-
-  const blob=pdf.output("blob");
-  const file=new File([blob],"horas_pendientes.pdf",{type:"application/pdf"});
-
-  if(navigator.canShare && navigator.canShare({files:[file]})){
-    await navigator.share({
-      files:[file],
-      title:"Horas pendientes",
-      text:"Reporte de horas pendientes"
-    });
-  }else{
-    pdf.save("horas_pendientes.pdf");
-  }
-}
-
-/* ===== JSON ===== */
-function exportarJSON(){
-  const blob=new Blob([JSON.stringify(registros,null,2)],{type:"application/json"});
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download="horas_trabajo.json";
-  a.click();
-}
-
-importJSONInput.onchange=e=>{
-  const f=e.target.files[0];if(!f)return;
-  const r=new FileReader();
-  r.onload=()=>{
-    try{
-      const d=JSON.parse(r.result);
-      if(!Array.isArray(d))throw 0;
-      registros=d;render();alert("Datos importados");
-    }catch{alert("JSON inválido");}
-  };
-  r.readAsText(f);
-};
-
+soloPendientes.onchange=render;
 render();
 </script>
 
