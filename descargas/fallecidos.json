@@ -4,7 +4,8 @@
     "Abuelos Maternos",
     "Tíos Paternos",
     "Tíos Maternos",
-    "Hermano"
+    "Hermano",
+    "Amigos"
   ],
   "personas": [
     {
@@ -13,6 +14,20 @@
       "edadFallecer": "47",
       "fallecimiento": "1970-03-08",
       "grupo": "Abuelos Maternos"
+    },
+    {
+      "id": "601430332",
+      "nombre": "MIGUEL ANGEL CHAVARRIA CHACON",
+      "edadFallecer": "17",
+      "fallecimiento": "1976-12-14",
+      "grupo": "Tíos Maternos"
+    },
+    {
+      "id": "1105550116",
+      "nombre": "MINOR MORA CHAVARRIA",
+      "edadFallecer": "10",
+      "fallecimiento": "1991-12-22",
+      "grupo": "Hermano"
     },
     {
       "id": "400580219",
@@ -29,11 +44,32 @@
       "grupo": "Tíos Paternos"
     },
     {
+      "id": "602250319",
+      "nombre": "GERTRUDIS SOCORRO CHAVARRIA CHACON",
+      "edadFallecer": "38",
+      "fallecimiento": "2008-01-21",
+      "grupo": "Tíos Maternos"
+    },
+    {
       "id": "101200870",
       "nombre": "HUMBERTO MORA MENA",
       "edadFallecer": "93",
       "fallecimiento": "2011-01-02",
       "grupo": "Abuelos Paternos"
+    },
+    {
+      "id": "103840075",
+      "nombre": "WILLIAM MONTOYA FERNANDEZ",
+      "edadFallecer": "71",
+      "fallecimiento": "2021-05-11",
+      "grupo": "Amigos"
+    },
+    {
+      "id": "USA001",
+      "nombre": "Ted esposo de Leticia ",
+      "edadFallecer": "87",
+      "fallecimiento": "2014-08-29",
+      "grupo": "Amigos"
     },
     {
       "id": "101280770",
@@ -43,17 +79,24 @@
       "grupo": "Abuelos Paternos"
     },
     {
-      "id": "103080422",
-      "nombre": "JOSE PATROCINIO MORA ARROYO",
-      "edadFallecer": "80",
-      "fallecimiento": "2023-10-31",
-      "grupo": "Tíos Paternos"
-    },
-    {
       "id": "104710782",
       "nombre": "VICTOR JULIO MORA ARROYO",
       "edadFallecer": "62",
       "fallecimiento": "2019-08-01",
+      "grupo": "Tíos Paternos"
+    },
+    {
+      "id": "MX001",
+      "nombre": "RUBEN PORRAZ SANABRIA",
+      "edadFallecer": "97",
+      "fallecimiento": "2021-04-16",
+      "grupo": "Amigos"
+    },
+    {
+      "id": "103080422",
+      "nombre": "JOSE PATROCINIO MORA ARROYO",
+      "edadFallecer": "80",
+      "fallecimiento": "2023-10-31",
       "grupo": "Tíos Paternos"
     },
     {
@@ -64,32 +107,11 @@
       "grupo": "Tíos Paternos"
     },
     {
-      "id": "602250319",
-      "nombre": "GERTRUDIS SOCORRO CHAVARRIA CHACON",
-      "edadFallecer": "38",
-      "fallecimiento": "2008-01-21",
-      "grupo": "Tíos Maternos"
-    },
-    {
-      "id": "601430332",
-      "nombre": "MIGUEL ANGEL CHAVARRIA CHACON",
-      "edadFallecer": "17",
-      "fallecimiento": "1976-12-14",
-      "grupo": "Tíos Maternos"
-    },
-    {
       "id": "601770241",
       "nombre": "CLARA LUZ CHAVARRIA CHACON",
       "edadFallecer": "62",
       "fallecimiento": "2025-12-06",
       "grupo": "Tíos Maternos"
-    },
-    {
-      "id": "1105550116",
-      "nombre": "MINOR MORA CHAVARRIA",
-      "edadFallecer": "10",
-      "fallecimiento": "1991-12-22",
-      "grupo": "Hermano"
     }
   ]
 }
