@@ -336,6 +336,7 @@
     "total": 3000,
     "pendiente": 3000,
     "abonos": []
+<<<<<<< HEAD
   },
   {
     "fecha": "2026-01-13",
@@ -356,5 +357,7 @@
     "total": 14000,
     "pendiente": 14000,
     "abonos": []
+=======
+>>>>>>> 5fe9c610e3d4706e70b11bebc16bf6c5ea806df4
   }
 ]
