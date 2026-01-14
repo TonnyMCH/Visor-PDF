@@ -6,11 +6,15 @@
     "detalle": "Tarea Planeamiento de Noviembre 2025",
     "horas": 2,
     "total": 4000,
-    "pendiente": 767,
+    "pendiente": 0,
     "abonos": [
       {
         "fecha": "2025-10-24",
         "monto": 3233
+      },
+      {
+        "fecha": "30/12/2025",
+        "monto": 767
       }
     ]
   },
@@ -21,8 +25,13 @@
     "detalle": "Imprimir hojas Cartas a la municipalidad y dibujos de colorear",
     "horas": 0.5,
     "total": 1000,
-    "pendiente": 1000,
-    "abonos": []
+    "pendiente": 0,
+    "abonos": [
+      {
+        "fecha": "30/12/2025",
+        "monto": 1000
+      }
+    ]
   },
   {
     "fecha": "2025-10-26",
@@ -31,8 +40,13 @@
     "detalle": "16 hojas imprimidas",
     "horas": 0.5,
     "total": 1600,
-    "pendiente": 1600,
-    "abonos": []
+    "pendiente": 0,
+    "abonos": [
+      {
+        "fecha": "30/12/2025",
+        "monto": 1600
+      }
+    ]
   },
   {
     "fecha": "2025-10-31",
@@ -41,8 +55,13 @@
     "detalle": "Imprimir dibujos",
     "horas": 0.5,
     "total": 1000,
-    "pendiente": 1000,
-    "abonos": []
+    "pendiente": 0,
+    "abonos": [
+      {
+        "fecha": "30/12/2025",
+        "monto": 1000
+      }
+    ]
   },
   {
     "fecha": "2025-10-31",
@@ -51,8 +70,13 @@
     "detalle": "6 hojas imprimidas",
     "horas": 0.5,
     "total": 600,
-    "pendiente": 600,
-    "abonos": []
+    "pendiente": 0,
+    "abonos": [
+      {
+        "fecha": "30/12/2025",
+        "monto": 600
+      }
+    ]
   },
   {
     "fecha": "2025-11-10",
@@ -61,8 +85,13 @@
     "detalle": "Imprimir hojas de Zeidy",
     "horas": 1,
     "total": 2000,
-    "pendiente": 2000,
-    "abonos": []
+    "pendiente": 0,
+    "abonos": [
+      {
+        "fecha": "30/12/2025",
+        "monto": 2000
+      }
+    ]
   },
   {
     "fecha": "2025-11-15",
@@ -71,8 +100,13 @@
     "detalle": "Tarea de Musica",
     "horas": 2,
     "total": 4000,
-    "pendiente": 4000,
-    "abonos": []
+    "pendiente": 0,
+    "abonos": [
+      {
+        "fecha": "30/12/2025",
+        "monto": 4000
+      }
+    ]
   },
   {
     "fecha": "2025-11-18",
@@ -81,8 +115,17 @@
     "detalle": "Tarea de Musica",
     "horas": 7,
     "total": 14000,
-    "pendiente": 14000,
-    "abonos": []
+    "pendiente": 0,
+    "abonos": [
+      {
+        "fecha": "30/12/2025",
+        "monto": 6000
+      },
+      {
+        "fecha": "30/12/2025",
+        "monto": 8000
+      }
+    ]
   },
   {
     "fecha": "2025-11-21",
@@ -91,8 +134,13 @@
     "detalle": "Correos",
     "horas": 0.5,
     "total": 1000,
-    "pendiente": 1000,
-    "abonos": []
+    "pendiente": 0,
+    "abonos": [
+      {
+        "fecha": "30/12/2025",
+        "monto": 1000
+      }
+    ]
   },
   {
     "fecha": "2025-11-25",
@@ -101,8 +149,13 @@
     "detalle": "Mapa Estrategico DBA 2026 APSD, Carta de la muchacha para que recoja bultos",
     "horas": 4.5,
     "total": 9000,
-    "pendiente": 9000,
-    "abonos": []
+    "pendiente": 8000,
+    "abonos": [
+      {
+        "fecha": "30/12/2025",
+        "monto": 1000
+      }
+    ]
   },
   {
     "fecha": "2025-11-25",
@@ -262,6 +315,46 @@
     "horas": 0.3333333333333333,
     "total": 667,
     "pendiente": 667,
+    "abonos": []
+  },
+  {
+    "fecha": "2025-12-30",
+    "inicio": "11:00",
+    "salida": "15:30",
+    "detalle": "Adjuntar oficio recibido al IMAS, Clase de firma digital e impresión de 10 dibujos ampliados e impresión de Oficio MS-DRRSBRU-DARS-O-IT-0582-2024 del Ministerio de Salud, relleno de pagare y matricula de UIA",
+    "horas": 4.5,
+    "total": 9000,
+    "pendiente": 9000,
+    "abonos": []
+  },
+  {
+    "fecha": "2026-01-06",
+    "inicio": "08:00",
+    "salida": "09:30",
+    "detalle": "Buscar Permuta y editar imágenes de familia Jiménez Tabash ",
+    "horas": 1.5,
+    "total": 3000,
+    "pendiente": 3000,
+    "abonos": []
+  },
+  {
+    "fecha": "2026-01-13",
+    "inicio": "10:00",
+    "salida": "16:30",
+    "detalle": "Mandados al super, documentación de todo tipo de hojas, trabajos impresos.",
+    "horas": 6.5,
+    "total": 13000,
+    "pendiente": 13000,
+    "abonos": []
+  },
+  {
+    "fecha": "2026-01-14",
+    "inicio": "09:00",
+    "salida": "16:00",
+    "detalle": "Terminar la primera tarea de Artes y Materiales",
+    "horas": 7,
+    "total": 14000,
+    "pendiente": 14000,
     "abonos": []
   }
 ]
