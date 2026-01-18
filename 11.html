@@ -31,7 +31,7 @@ th,td { border-bottom:1px solid #ddd; padding:6px; text-align:center; }
 
 <h2>🍎 Venta de Frutas</h2>
 
-<!-- ================= VENTA (ARRIBA) ================= -->
+<!-- ================= VENTA ================= -->
 <div class="card">
 <h3>Venta</h3>
 
@@ -45,7 +45,12 @@ th,td { border-bottom:1px solid #ddd; padding:6px; text-align:center; }
 
 <table>
 <thead>
-<tr><th>Fruta</th><th>Cant.</th><th>Total</th></tr>
+<tr>
+  <th>Fruta</th>
+  <th>Cant.</th>
+  <th>Total</th>
+  <th></th>
+</tr>
 </thead>
 <tbody id="lista"></tbody>
 </table>
@@ -56,7 +61,7 @@ th,td { border-bottom:1px solid #ddd; padding:6px; text-align:center; }
 <button class="red" onclick="limpiarVenta()">Limpiar venta</button>
 </div>
 
-<!-- ================= PRECIOS (ABAJO) ================= -->
+<!-- ================= PRECIOS ================= -->
 <div class="card">
 <h3>Administrar precios</h3>
 
@@ -177,25 +182,55 @@ function descargar(blob,nombre){
 function cargarPrecioVenta(){
     precioVenta.value = precios[frutaVenta.value]?.precio || "";
 }
+
 function agregarVenta(){
-    const f=frutaVenta.value, c=Number(cantidad.value);
-    if(!f||!c) return alert("Datos incompletos");
-    const sub=c*precios[f].precio;
-    ventas.push({f,c,sub}); total+=sub;
-    lista.innerHTML+=`<tr><td>${f}</td><td>${c}</td><td>₡${sub.toFixed(2)}</td></tr>`;
-    document.getElementById("total").textContent=total.toFixed(2);
-    cantidad.value="";
+    const f = frutaVenta.value;
+    const c = Number(cantidad.value);
+    if(!f || !c) return alert("Datos incompletos");
+
+    const sub = c * precios[f].precio;
+    const index = ventas.length;
+
+    ventas.push({f, c, sub});
+    total += sub;
+
+    lista.innerHTML += `
+      <tr data-index="${index}">
+        <td>${f}</td>
+        <td>${c}</td>
+        <td>₡${sub.toFixed(2)}</td>
+        <td><button class="red" onclick="borrarFila(${index})">❌</button></td>
+      </tr>
+    `;
+
+    document.getElementById("total").textContent = total.toFixed(2);
+    cantidad.value = "";
 }
+
+function borrarFila(index){
+    const fila = document.querySelector(`tr[data-index="${index}"]`);
+    if(!fila) return;
+
+    total -= ventas[index].sub;
+    ventas[index] = null;
+    fila.remove();
+
+    document.getElementById("total").textContent = total.toFixed(2);
+}
+
 function limpiarVenta(){
-    ventas=[]; total=0; lista.innerHTML="";
+    ventas=[]; total=0;
+    lista.innerHTML="";
     document.getElementById("total").textContent="0.00";
 }
 
 /* ---------- WHATSAPP ---------- */
 function enviarWhatsApp(){
-    if(!ventas.length) return alert("No hay venta");
+    if(!ventas.some(v=>v)) return alert("No hay venta");
     let msg="🧾 *Factura de frutas*%0A";
-    ventas.forEach(v=>msg+=`- ${v.f}: ${v.c} = ₡${v.sub.toFixed(2)}%0A`);
+    ventas.filter(v=>v).forEach(v=>{
+        msg+=`- ${v.f}: ${v.c} = ₡${v.sub.toFixed(2)}%0A`;
+    });
     msg+=`%0A*TOTAL: ₡${total.toFixed(2)}*`;
     window.open(`https://wa.me/?text=${msg}`,"_blank");
 }
