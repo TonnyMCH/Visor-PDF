@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Venta de Frutas</title>
+
+<style>
+body { font-family: Arial, sans-serif; background:#f4f6f8; padding:15px; }
+h2,h3 { text-align:center; }
+.card {
+    background:#fff; padding:15px; border-radius:10px;
+    margin-bottom:15px; box-shadow:0 2px 6px rgba(0,0,0,.1);
+}
+label { font-weight:bold; display:block; margin-top:8px; }
+input,select,button {
+    width:100%; padding:10px; margin-top:5px; font-size:16px;
+}
+button { border:none; border-radius:5px; background:#28a745; color:white; }
+.red { background:#dc3545; }
+.blue { background:#007bff; }
+.gray { background:#6c757d; }
+
+table { width:100%; border-collapse:collapse; }
+th,td { border-bottom:1px solid #ddd; padding:6px; text-align:center; }
+.total { font-size:22px; font-weight:bold; text-align:right; }
+</style>
+</head>
+
+<body>
+
+<h2>🍎 Venta de Frutas</h2>
+
+<!-- ================= VENTA (ARRIBA) ================= -->
+<div class="card">
+<h3>Venta</h3>
+
+<input id="buscarFruta" placeholder="🔎 Buscar fruta (tecla F)" onkeyup="buscarFruta()">
+
+<select id="frutaVenta" onchange="cargarPrecioVenta()"></select>
+<input type="number" id="precioVenta" readonly placeholder="Precio">
+<input type="number" id="cantidad" placeholder="Cantidad">
+
+<button onclick="agregarVenta()">Agregar</button>
+
+<table>
+<thead>
+<tr><th>Fruta</th><th>Cant.</th><th>Total</th></tr>
+</thead>
+<tbody id="lista"></tbody>
+</table>
+
+<p class="total">Total: ₡<span id="total">0.00</span></p>
+
+<button class="blue" onclick="enviarWhatsApp()">Enviar por WhatsApp</button>
+<button class="red" onclick="limpiarVenta()">Limpiar venta</button>
+</div>
+
+<!-- ================= PRECIOS (ABAJO) ================= -->
+<div class="card">
+<h3>Administrar precios</h3>
+
+<input id="nombre" placeholder="Fruta">
+<select id="tipo">
+    <option value="kilo">Por kilo</option>
+    <option value="unidad">Por unidad</option>
+</select>
+<input type="number" id="precio" placeholder="Precio">
+
+<button onclick="guardar()">Guardar / Actualizar</button>
+
+<hr>
+
+<input type="file" id="archivoJSON" accept=".json">
+<button class="gray" onclick="importarJSON()">Importar JSON</button>
+
+<table>
+<thead>
+<tr><th>Fruta</th><th>Tipo</th><th>Precio</th><th>Acción</th></tr>
+</thead>
+<tbody id="tablaPrecios"></tbody>
+</table>
+
+<button class="blue" onclick="exportarJSON()">Exportar JSON</button>
+<button class="gray" onclick="exportarExcel()">Exportar Excel</button>
+</div>
+
+<script>
+let precios = JSON.parse(localStorage.getItem("precios")) || {};
+let ventas = [];
+let total = 0;
+
+/* ---------- PRECIOS ---------- */
+function guardar() {
+    if (!nombre.value || !precio.value) return alert("Datos incompletos");
+    precios[nombre.value] = { tipo: tipo.value, precio: Number(precio.value) };
+    localStorage.setItem("precios", JSON.stringify(precios));
+    mostrarPrecios();
+    nombre.value = precio.value = "";
+}
+
+function eliminar(f) {
+    if (confirm("Eliminar " + f + "?")) {
+        delete precios[f];
+        localStorage.setItem("precios", JSON.stringify(precios));
+        mostrarPrecios();
+    }
+}
+
+function mostrarPrecios() {
+    tablaPrecios.innerHTML = "";
+    frutaVenta.innerHTML = "<option value=''>Seleccione</option>";
+    for (let f in precios) {
+        tablaPrecios.innerHTML += `
+        <tr>
+            <td>${f}</td>
+            <td>${precios[f].tipo}</td>
+            <td>₡${precios[f].precio}</td>
+            <td><button class="red" onclick="eliminar('${f}')">X</button></td>
+        </tr>`;
+        frutaVenta.innerHTML += `<option value="${f}">${f}</option>`;
+    }
+}
+mostrarPrecios();
+
+/* ---------- BUSCAR ---------- */
+const buscarInput = document.getElementById("buscarFruta");
+function buscarFruta() {
+    const t = buscarInput.value.toLowerCase();
+    document.querySelectorAll("#tablaPrecios tr").forEach(tr=>{
+        tr.style.display = tr.children[0].textContent.toLowerCase().includes(t) ? "" : "none";
+    });
+    document.querySelectorAll("#frutaVenta option").forEach((o,i)=>{
+        if(i===0) return;
+        o.style.display = o.textContent.toLowerCase().includes(t) ? "" : "none";
+    });
+}
+
+/* ---------- IMPORTAR ---------- */
+function importarJSON() {
+    const file = archivoJSON.files[0];
+    if (!file) return alert("Seleccione un JSON");
+    const reader = new FileReader();
+    reader.onload = e => {
+        try {
+            const data = JSON.parse(e.target.result);
+            for (let f in data) {
+                if (data[f].precio && data[f].tipo) precios[f] = data[f];
+            }
+            localStorage.setItem("precios", JSON.stringify(precios));
+            mostrarPrecios();
+            alert("Precios importados");
+        } catch {
+            alert("JSON inválido");
+        }
+    };
+    reader.readAsText(file);
+}
+
+/* ---------- EXPORTAR ---------- */
+function exportarJSON() {
+    descargar(new Blob([JSON.stringify(precios,null,2)],{type:"application/json"}),"precios.json");
+}
+function exportarExcel() {
+    let csv="Fruta,Tipo,Precio\n";
+    for(let f in precios) csv+=`${f},${precios[f].tipo},${precios[f].precio}\n`;
+    descargar(new Blob([csv],{type:"text/csv"}),"precios.csv");
+}
+function descargar(blob,nombre){
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    a.download=nombre;
+    a.click();
+}
+
+/* ---------- VENTAS ---------- */
+function cargarPrecioVenta(){
+    precioVenta.value = precios[frutaVenta.value]?.precio || "";
+}
+function agregarVenta(){
+    const f=frutaVenta.value, c=Number(cantidad.value);
+    if(!f||!c) return alert("Datos incompletos");
+    const sub=c*precios[f].precio;
+    ventas.push({f,c,sub}); total+=sub;
+    lista.innerHTML+=`<tr><td>${f}</td><td>${c}</td><td>₡${sub.toFixed(2)}</td></tr>`;
+    document.getElementById("total").textContent=total.toFixed(2);
+    cantidad.value="";
+}
+function limpiarVenta(){
+    ventas=[]; total=0; lista.innerHTML="";
+    document.getElementById("total").textContent="0.00";
+}
+
+/* ---------- WHATSAPP ---------- */
+function enviarWhatsApp(){
+    if(!ventas.length) return alert("No hay venta");
+    let msg="🧾 *Factura de frutas*%0A";
+    ventas.forEach(v=>msg+=`- ${v.f}: ${v.c} = ₡${v.sub.toFixed(2)}%0A`);
+    msg+=`%0A*TOTAL: ₡${total.toFixed(2)}*`;
+    window.open(`https://wa.me/?text=${msg}`,"_blank");
+}
+
+/* ---------- ATAJOS ---------- */
+document.addEventListener("keydown", e => {
+    if (e.key.toLowerCase()==="f" && document.activeElement.tagName!=="INPUT") {
+        e.preventDefault();
+        buscarInput.focus();
+    }
+    if (e.key==="Escape") {
+        buscarInput.value="";
+        buscarFruta();
+    }
+    if (e.key==="Enter" && document.activeElement===buscarInput) {
+        const opt=[...frutaVenta.options].find(o=>o.style.display!=="none" && o.value);
+        if(opt){
+            frutaVenta.value=opt.value;
+            cargarPrecioVenta();
+            cantidad.focus();
+        }
+    }
+});
+</script>
+
+</body>
+</html>
