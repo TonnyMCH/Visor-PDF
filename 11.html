@@ -6,254 +6,272 @@
 <title>Venta de Frutas</title>
 
 <style>
-body { font-family: Arial, sans-serif; background:#f4f6f8; padding:15px; }
-h2,h3 { text-align:center; }
-.card {
-    background:#fff; padding:15px; border-radius:10px;
-    margin-bottom:15px; box-shadow:0 2px 6px rgba(0,0,0,.1);
+body{
+  font-family: Arial, sans-serif;
+  background:#f2f2f2;
+  margin:0;
 }
-label { font-weight:bold; display:block; margin-top:8px; }
-input,select,button {
-    width:100%; padding:10px; margin-top:5px; font-size:16px;
-}
-button { border:none; border-radius:5px; background:#28a745; color:white; }
-.red { background:#dc3545; }
-.blue { background:#007bff; }
-.gray { background:#6c757d; }
 
-table { width:100%; border-collapse:collapse; }
-th,td { border-bottom:1px solid #ddd; padding:6px; text-align:center; }
-.total { font-size:22px; font-weight:bold; text-align:right; }
+/* ====== TABS ====== */
+.tabs{
+  display:flex;
+  position:sticky;
+  top:0;
+  background:#fff;
+  z-index:10;
+  box-shadow:0 2px 5px rgba(0,0,0,.1);
+}
+.tabs button{
+  flex:1;
+  padding:12px;
+  font-size:15px;
+  border:none;
+  background:#eee;
+}
+.tabs button.active{
+  background:#28a745;
+  color:#fff;
+}
+
+/* ====== SECCIONES ====== */
+.seccion{
+  display:none;
+  background:#fff;
+  margin:10px;
+  padding:15px;
+  border-radius:10px;
+  box-shadow:0 2px 6px rgba(0,0,0,.1);
+}
+.seccion.activa{display:block}
+
+input, select, button{
+  width:100%;
+  padding:10px;
+  margin:5px 0;
+  font-size:16px;
+}
+
+button{
+  border:none;
+  border-radius:6px;
+}
+button.green{background:#28a745;color:#fff}
+button.red{background:#e53935;color:#fff}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:10px;
+}
+th,td{
+  padding:8px;
+  border-bottom:1px solid #ddd;
+}
 </style>
 </head>
 
 <body>
 
-<h2>🍎 Venta de Frutas</h2>
+<!-- ====== MENÚ ====== -->
+<div class="tabs">
+  <button class="active" onclick="abrirTab('ventaBuscar',this)">🧾 Venta</button>
+  <button onclick="abrirTab('precios',this)">🍎 Precios</button>
+  <button onclick="abrirTab('archivos',this)">📦 Archivos</button>
+</div>
 
-<!-- ================= VENTA ================= -->
-<div class="card">
-<h3>Venta</h3>
+<!-- ====== VENTA + BUSCAR ====== -->
+<section id="ventaBuscar" class="seccion activa">
 
-<input id="buscarFruta" placeholder="🔎 Buscar fruta (tecla F)" onkeyup="buscarFruta()">
+<h2>🔍 Buscar fruta</h2>
+<input id="buscarFruta" placeholder="Buscar (F)" onkeyup="buscarFrutaFn()">
 
-<select id="frutaVenta" onchange="cargarPrecioVenta()"></select>
-<input type="number" id="precioVenta" readonly placeholder="Precio">
+<h2>🧾 Venta</h2>
+<select id="frutaVenta">
+  <option value="">Seleccione fruta</option>
+</select>
+
 <input type="number" id="cantidad" placeholder="Cantidad">
-
-<button onclick="agregarVenta()">Agregar</button>
+<button class="green" onclick="agregarVenta()">➕ Agregar</button>
 
 <table>
 <thead>
-<tr>
-  <th>Fruta</th>
-  <th>Cant.</th>
-  <th>Total</th>
-  <th></th>
-</tr>
+<tr><th>Fruta</th><th>Cant.</th><th>Total</th><th></th></tr>
 </thead>
 <tbody id="lista"></tbody>
 </table>
 
-<p class="total">Total: ₡<span id="total">0.00</span></p>
+<h3>Total: ₡<span id="total">0</span></h3>
+<button onclick="enviarWhatsApp()">📲 Enviar factura</button>
 
-<button class="blue" onclick="enviarWhatsApp()">Enviar por WhatsApp</button>
-<button class="red" onclick="limpiarVenta()">Limpiar venta</button>
-</div>
+</section>
 
-<!-- ================= PRECIOS ================= -->
-<div class="card">
-<h3>Administrar precios</h3>
+<!-- ====== PRECIOS ====== -->
+<section id="precios" class="seccion">
+<h2>🍎 Precios</h2>
 
-<input id="nombre" placeholder="Fruta">
+<input id="nombre" placeholder="Nombre fruta">
+<input id="precio" type="number" placeholder="Precio">
 <select id="tipo">
-    <option value="kilo">Por kilo</option>
-    <option value="unidad">Por unidad</option>
+  <option value="kilo">Por kilo</option>
+  <option value="unidad">Por unidad</option>
 </select>
-<input type="number" id="precio" placeholder="Precio">
 
-<button onclick="guardar()">Guardar / Actualizar</button>
-
-<hr>
-
-<input type="file" id="archivoJSON" accept=".json">
-<button class="gray" onclick="importarJSON()">Importar JSON</button>
+<button onclick="guardarPrecio()">💾 Guardar</button>
 
 <table>
 <thead>
-<tr><th>Fruta</th><th>Tipo</th><th>Precio</th><th>Acción</th></tr>
+<tr><th>Fruta</th><th>Precio</th><th>Tipo</th><th></th></tr>
 </thead>
 <tbody id="tablaPrecios"></tbody>
 </table>
+</section>
 
-<button class="blue" onclick="exportarJSON()">Exportar JSON</button>
-<button class="gray" onclick="exportarExcel()">Exportar Excel</button>
-</div>
+<!-- ====== ARCHIVOS ====== -->
+<section id="archivos" class="seccion">
+<h2>📦 Importar / Exportar</h2>
+<input type="file" accept=".json" onchange="importarJSON(event)">
+<button onclick="exportarJSON()">📄 Exportar JSON</button>
+</section>
 
 <script>
-let precios = JSON.parse(localStorage.getItem("precios")) || {};
+let precios = {};
 let ventas = [];
 let total = 0;
 
-/* ---------- PRECIOS ---------- */
-function guardar() {
-    if (!nombre.value || !precio.value) return alert("Datos incompletos");
-    precios[nombre.value] = { tipo: tipo.value, precio: Number(precio.value) };
-    localStorage.setItem("precios", JSON.stringify(precios));
-    mostrarPrecios();
-    nombre.value = precio.value = "";
+/* ====== TABS ====== */
+function abrirTab(id,btn){
+  document.querySelectorAll(".seccion").forEach(s=>s.classList.remove("activa"));
+  document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("active"));
+  document.getElementById(id).classList.add("activa");
+  btn.classList.add("active");
 }
 
-function eliminar(f) {
-    if (confirm("Eliminar " + f + "?")) {
-        delete precios[f];
-        localStorage.setItem("precios", JSON.stringify(precios));
-        mostrarPrecios();
-    }
+/* ====== PRECIOS ====== */
+function guardarPrecio(){
+  if(!nombre.value || !precio.value) return alert("Datos incompletos");
+  precios[nombre.value]={
+    precio:Number(precio.value),
+    tipo:tipo.value
+  };
+  nombre.value=precio.value="";
+  actualizar();
 }
 
-function mostrarPrecios() {
-    tablaPrecios.innerHTML = "";
-    frutaVenta.innerHTML = "<option value=''>Seleccione</option>";
-    for (let f in precios) {
-        tablaPrecios.innerHTML += `
-        <tr>
-            <td>${f}</td>
-            <td>${precios[f].tipo}</td>
-            <td>₡${precios[f].precio}</td>
-            <td><button class="red" onclick="eliminar('${f}')">X</button></td>
-        </tr>`;
-        frutaVenta.innerHTML += `<option value="${f}">${f}</option>`;
-    }
-}
-mostrarPrecios();
-
-/* ---------- BUSCAR ---------- */
-const buscarInput = document.getElementById("buscarFruta");
-function buscarFruta() {
-    const t = buscarInput.value.toLowerCase();
-    document.querySelectorAll("#tablaPrecios tr").forEach(tr=>{
-        tr.style.display = tr.children[0].textContent.toLowerCase().includes(t) ? "" : "none";
-    });
-    document.querySelectorAll("#frutaVenta option").forEach((o,i)=>{
-        if(i===0) return;
-        o.style.display = o.textContent.toLowerCase().includes(t) ? "" : "none";
-    });
+function actualizar(){
+  tablaPrecios.innerHTML="";
+  frutaVenta.innerHTML=`<option value="">Seleccione fruta</option>`;
+  for(let f in precios){
+    tablaPrecios.innerHTML+=`
+    <tr>
+      <td>${f}</td>
+      <td>₡${precios[f].precio}</td>
+      <td>${precios[f].tipo}</td>
+      <td><button class="red" onclick="eliminarPrecio('${f}')">❌</button></td>
+    </tr>`;
+    frutaVenta.innerHTML+=`<option value="${f}">${f}</option>`;
+  }
 }
 
-/* ---------- IMPORTAR ---------- */
-function importarJSON() {
-    const file = archivoJSON.files[0];
-    if (!file) return alert("Seleccione un JSON");
-    const reader = new FileReader();
-    reader.onload = e => {
-        try {
-            const data = JSON.parse(e.target.result);
-            for (let f in data) {
-                if (data[f].precio && data[f].tipo) precios[f] = data[f];
-            }
-            localStorage.setItem("precios", JSON.stringify(precios));
-            mostrarPrecios();
-            alert("Precios importados");
-        } catch {
-            alert("JSON inválido");
-        }
-    };
-    reader.readAsText(file);
+function eliminarPrecio(f){
+  delete precios[f];
+  actualizar();
 }
 
-/* ---------- EXPORTAR ---------- */
-function exportarJSON() {
-    descargar(new Blob([JSON.stringify(precios,null,2)],{type:"application/json"}),"precios.json");
-}
-function exportarExcel() {
-    let csv="Fruta,Tipo,Precio\n";
-    for(let f in precios) csv+=`${f},${precios[f].tipo},${precios[f].precio}\n`;
-    descargar(new Blob([csv],{type:"text/csv"}),"precios.csv");
-}
-function descargar(blob,nombre){
-    const a=document.createElement("a");
-    a.href=URL.createObjectURL(blob);
-    a.download=nombre;
-    a.click();
+/* ====== BUSCAR ====== */
+function buscarFrutaFn(){
+  const t=buscarFruta.value.toLowerCase();
+
+  [...tablaPrecios.rows].forEach(r=>{
+    r.style.display=r.cells[0].innerText.toLowerCase().includes(t)?"":"none";
+  });
+
+  [...frutaVenta.options].forEach((o,i)=>{
+    if(i===0) return;
+    o.style.display=o.text.toLowerCase().includes(t)?"":"none";
+  });
 }
 
-/* ---------- VENTAS ---------- */
-function cargarPrecioVenta(){
-    precioVenta.value = precios[frutaVenta.value]?.precio || "";
-}
-
+/* ====== VENTAS ====== */
 function agregarVenta(){
-    const f = frutaVenta.value;
-    const c = Number(cantidad.value);
-    if(!f || !c) return alert("Datos incompletos");
+  if(!frutaVenta.value || !cantidad.value) return;
 
-    const sub = c * precios[f].precio;
-    const index = ventas.length;
+  const sub=cantidad.value*precios[frutaVenta.value].precio;
+  ventas.push({f:frutaVenta.value,c:cantidad.value,sub});
+  total+=sub;
 
-    ventas.push({f, c, sub});
-    total += sub;
+  const i=ventas.length-1;
+  lista.innerHTML+=`
+  <tr data-i="${i}">
+    <td>${frutaVenta.value}</td>
+    <td>${cantidad.value}</td>
+    <td>₡${sub}</td>
+    <td><button class="red" onclick="borrarFila(${i})">❌</button></td>
+  </tr>`;
 
-    lista.innerHTML += `
-      <tr data-index="${index}">
-        <td>${f}</td>
-        <td>${c}</td>
-        <td>₡${sub.toFixed(2)}</td>
-        <td><button class="red" onclick="borrarFila(${index})">❌</button></td>
-      </tr>
-    `;
-
-    document.getElementById("total").textContent = total.toFixed(2);
-    cantidad.value = "";
+  document.getElementById("total").textContent=total;
+  cantidad.value="";
 }
 
-function borrarFila(index){
-    const fila = document.querySelector(`tr[data-index="${index}"]`);
-    if(!fila) return;
-
-    total -= ventas[index].sub;
-    ventas[index] = null;
-    fila.remove();
-
-    document.getElementById("total").textContent = total.toFixed(2);
+function borrarFila(i){
+  total-=ventas[i].sub;
+  ventas[i]=null;
+  document.querySelector(`tr[data-i="${i}"]`).remove();
+  document.getElementById("total").textContent=total;
 }
 
-function limpiarVenta(){
-    ventas=[]; total=0;
-    lista.innerHTML="";
-    document.getElementById("total").textContent="0.00";
+/* ====== IMPORTAR / EXPORTAR ====== */
+function exportarJSON(){
+  const blob=new Blob([JSON.stringify(precios,null,2)],{type:"application/json"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="precios.json";
+  a.click();
 }
 
-/* ---------- WHATSAPP ---------- */
+function importarJSON(e){
+  const file=e.target.files[0];
+  if(!file) return;
+
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const data=JSON.parse(reader.result);
+
+      // Si viene como ARRAY
+      if(Array.isArray(data)){
+        data.forEach(item=>{
+          if(item.nombre && item.precio){
+            precios[item.nombre]={
+              precio:Number(item.precio),
+              tipo:item.tipo || "unidad"
+            };
+          }
+        });
+      }
+      // Si viene como OBJETO
+      else{
+        precios=data;
+      }
+
+      actualizar();
+      alert("✅ Precios importados correctamente");
+
+    }catch(err){
+      alert("❌ Error al importar el archivo");
+    }
+  };
+  reader.readAsText(file);
+}
+
+/* ====== WHATSAPP ====== */
 function enviarWhatsApp(){
-    if(!ventas.some(v=>v)) return alert("No hay venta");
-    let msg="🧾 *Factura de frutas*%0A";
-    ventas.filter(v=>v).forEach(v=>{
-        msg+=`- ${v.f}: ${v.c} = ₡${v.sub.toFixed(2)}%0A`;
-    });
-    msg+=`%0A*TOTAL: ₡${total.toFixed(2)}*`;
-    window.open(`https://wa.me/?text=${msg}`,"_blank");
+  let msg="🧾 Factura%0A";
+  ventas.forEach(v=>{
+    if(v) msg+=`${v.f} x${v.c} = ₡${v.sub}%0A`;
+  });
+  msg+=`Total: ₡${total}`;
+  window.open(`https://wa.me/?text=${msg}`);
 }
-
-/* ---------- ATAJOS ---------- */
-document.addEventListener("keydown", e => {
-    if (e.key.toLowerCase()==="f" && document.activeElement.tagName!=="INPUT") {
-        e.preventDefault();
-        buscarInput.focus();
-    }
-    if (e.key==="Escape") {
-        buscarInput.value="";
-        buscarFruta();
-    }
-    if (e.key==="Enter" && document.activeElement===buscarInput) {
-        const opt=[...frutaVenta.options].find(o=>o.style.display!=="none" && o.value);
-        if(opt){
-            frutaVenta.value=opt.value;
-            cargarPrecioVenta();
-            cantidad.focus();
-        }
-    }
-});
 </script>
 
 </body>
