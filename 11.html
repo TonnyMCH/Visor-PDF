@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Venta de Frutas</title>
 
-    <link rel="icon" href="imagenes/imagen11.png" type="image/png">
+<link rel="icon" href="imagenes/imagen11.png" type="image/png">
 
 <style>
 body{
@@ -13,8 +13,6 @@ body{
   background:#f2f2f2;
   margin:0;
 }
-
-/* ====== TABS ====== */
 .tabs{
   display:flex;
   position:sticky;
@@ -26,16 +24,14 @@ body{
 .tabs button{
   flex:1;
   padding:12px;
-  font-size:15px;
   border:none;
   background:#eee;
+  font-size:15px;
 }
 .tabs button.active{
   background:#28a745;
   color:#fff;
 }
-
-/* ====== SECCIONES ====== */
 .seccion{
   display:none;
   background:#fff;
@@ -46,13 +42,12 @@ body{
 }
 .seccion.activa{display:block}
 
-input, select, button{
+input,select,button{
   width:100%;
   padding:10px;
   margin:5px 0;
   font-size:16px;
 }
-
 button{
   border:none;
   border-radius:6px;
@@ -74,20 +69,19 @@ th,td{
 
 <body>
 
-<!-- ====== MENÚ ====== -->
+<!-- ===== MENÚ ===== -->
 <div class="tabs">
   <button class="active" onclick="abrirTab('ventaBuscar',this)">🧾 Venta</button>
   <button onclick="abrirTab('precios',this)">🍎 Precios</button>
   <button onclick="abrirTab('archivos',this)">📦 Archivos</button>
 </div>
 
-<!-- ====== VENTA + BUSCAR ====== -->
+<!-- ===== VENTA + BUSCAR ===== -->
 <section id="ventaBuscar" class="seccion activa">
+<h3>🔍 Buscar fruta</h3>
+<input id="buscarFruta" placeholder="Buscar" onkeyup="buscarFrutaFn()">
 
-<h2>🔍 Buscar fruta</h2>
-<input id="buscarFruta" placeholder="Buscar (F)" onkeyup="buscarFrutaFn()">
-
-<h2>🧾 Venta</h2>
+<h3>🧾 Venta</h3>
 <select id="frutaVenta">
   <option value="">Seleccione fruta</option>
 </select>
@@ -104,12 +98,11 @@ th,td{
 
 <h3>Total: ₡<span id="total">0</span></h3>
 <button onclick="enviarWhatsApp()">📲 Enviar factura</button>
-
 </section>
 
-<!-- ====== PRECIOS ====== -->
+<!-- ===== PRECIOS ===== -->
 <section id="precios" class="seccion">
-<h2>🍎 Precios</h2>
+<h3>🍎 Precios</h3>
 
 <input id="nombre" placeholder="Nombre fruta">
 <input id="precio" type="number" placeholder="Precio">
@@ -128,9 +121,9 @@ th,td{
 </table>
 </section>
 
-<!-- ====== ARCHIVOS ====== -->
+<!-- ===== ARCHIVOS ===== -->
 <section id="archivos" class="seccion">
-<h2>📦 Importar / Exportar</h2>
+<h3>📦 Importar / Exportar</h3>
 <input type="file" accept=".json" onchange="importarJSON(event)">
 <button onclick="exportarJSON()">📄 Exportar JSON</button>
 </section>
@@ -140,7 +133,7 @@ let precios = {};
 let ventas = [];
 let total = 0;
 
-/* ====== TABS ====== */
+/* ===== PESTAÑAS ===== */
 function abrirTab(id,btn){
   document.querySelectorAll(".seccion").forEach(s=>s.classList.remove("activa"));
   document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("active"));
@@ -148,7 +141,12 @@ function abrirTab(id,btn){
   btn.classList.add("active");
 }
 
-/* ====== PRECIOS ====== */
+/* ===== MEMORIA ===== */
+function guardarMemoria(){
+  localStorage.setItem("preciosFrutas", JSON.stringify(precios));
+}
+
+/* ===== PRECIOS ===== */
 function guardarPrecio(){
   if(!nombre.value || !precio.value) return alert("Datos incompletos");
   precios[nombre.value]={
@@ -162,6 +160,7 @@ function guardarPrecio(){
 function actualizar(){
   tablaPrecios.innerHTML="";
   frutaVenta.innerHTML=`<option value="">Seleccione fruta</option>`;
+
   for(let f in precios){
     tablaPrecios.innerHTML+=`
     <tr>
@@ -172,6 +171,7 @@ function actualizar(){
     </tr>`;
     frutaVenta.innerHTML+=`<option value="${f}">${f}</option>`;
   }
+  guardarMemoria();
 }
 
 function eliminarPrecio(f){
@@ -179,7 +179,7 @@ function eliminarPrecio(f){
   actualizar();
 }
 
-/* ====== BUSCAR ====== */
+/* ===== BUSCAR ===== */
 function buscarFrutaFn(){
   const t=buscarFruta.value.toLowerCase();
 
@@ -193,14 +193,12 @@ function buscarFrutaFn(){
   });
 }
 
-/* ====== VENTAS ====== */
+/* ===== VENTAS ===== */
 function agregarVenta(){
   if(!frutaVenta.value || !cantidad.value) return;
-
   const sub=cantidad.value*precios[frutaVenta.value].precio;
   ventas.push({f:frutaVenta.value,c:cantidad.value,sub});
   total+=sub;
-
   const i=ventas.length-1;
   lista.innerHTML+=`
   <tr data-i="${i}">
@@ -209,7 +207,6 @@ function agregarVenta(){
     <td>₡${sub}</td>
     <td><button class="red" onclick="borrarFila(${i})">❌</button></td>
   </tr>`;
-
   document.getElementById("total").textContent=total;
   cantidad.value="";
 }
@@ -221,7 +218,7 @@ function borrarFila(i){
   document.getElementById("total").textContent=total;
 }
 
-/* ====== IMPORTAR / EXPORTAR ====== */
+/* ===== IMPORTAR / EXPORTAR ===== */
 function exportarJSON(){
   const blob=new Blob([JSON.stringify(precios,null,2)],{type:"application/json"});
   const a=document.createElement("a");
@@ -233,39 +230,33 @@ function exportarJSON(){
 function importarJSON(e){
   const file=e.target.files[0];
   if(!file) return;
-
   const reader=new FileReader();
   reader.onload=()=>{
     try{
       const data=JSON.parse(reader.result);
 
-      // Si viene como ARRAY
       if(Array.isArray(data)){
         data.forEach(item=>{
           if(item.nombre && item.precio){
             precios[item.nombre]={
               precio:Number(item.precio),
-              tipo:item.tipo || "unidad"
+              tipo:item.tipo||"unidad"
             };
           }
         });
-      }
-      // Si viene como OBJETO
-      else{
+      } else {
         precios=data;
       }
-
       actualizar();
-      alert("✅ Precios importados correctamente");
-
-    }catch(err){
-      alert("❌ Error al importar el archivo");
+      alert("✅ Importado y guardado");
+    }catch{
+      alert("❌ Error en el JSON");
     }
   };
   reader.readAsText(file);
 }
 
-/* ====== WHATSAPP ====== */
+/* ===== WHATSAPP ===== */
 function enviarWhatsApp(){
   let msg="🧾 Factura%0A";
   ventas.forEach(v=>{
@@ -274,6 +265,15 @@ function enviarWhatsApp(){
   msg+=`Total: ₡${total}`;
   window.open(`https://wa.me/?text=${msg}`);
 }
+
+/* ===== CARGAR MEMORIA ===== */
+window.onload=()=>{
+  const data=localStorage.getItem("preciosFrutas");
+  if(data){
+    precios=JSON.parse(data);
+    actualizar();
+  }
+};
 </script>
 
 </body>
