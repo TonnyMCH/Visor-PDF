@@ -9,6 +9,6 @@ const enlaces = {
     enlace8: "ocho.html", 
     enlace9: "nueve.html", 
     enlace10: "diez.html", 
-    enlace11: "11.html", 
+    enlace11: "once.html", 
 
 };
