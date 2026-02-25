@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lista Pro</title>
+
+<style>
+body{
+    margin:0;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg,#4e73df,#1cc88a);
+    display:flex;
+    justify-content:center;
+    padding:20px;
+}
+
+.app{
+    background:white;
+    width:100%;
+    max-width:500px;
+    border-radius:15px;
+    padding:20px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.2);
+}
+
+h2{
+    text-align:center;
+}
+
+input{
+    width:100%;
+    padding:10px;
+    margin-top:8px;
+    border-radius:8px;
+    border:1px solid #ccc;
+}
+
+button{
+    padding:10px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    margin-top:8px;
+}
+
+.btn{
+    width:100%;
+    font-weight:bold;
+}
+
+.agregar{ background:#4e73df; color:white; }
+.copiar{ background:#36b9cc; color:white; }
+.whatsapp{ background:#25D366; color:white; }
+.exportar{ background:#858796; color:white; }
+.importar{ background:#f6c23e; color:black; }
+
+ul{
+    list-style:none;
+    padding:0;
+    margin-top:15px;
+}
+
+li{
+    background:#f8f9fc;
+    padding:10px;
+    border-radius:8px;
+    margin-bottom:8px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.eliminar{
+    background:#e74a3b;
+    color:white;
+    padding:5px 8px;
+    border-radius:5px;
+    font-size:12px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+<h2>📋 Lista Pro</h2>
+
+<input type="text" id="buscador" placeholder="🔍 Buscar..." oninput="render()">
+
+<input type="text" id="item" placeholder="Escribe un elemento">
+<button class="btn agregar" onclick="agregar()">Agregar</button>
+
+<ul id="lista"></ul>
+
+<button class="btn copiar" onclick="copiarLista()">Copiar Lista</button>
+<button class="btn whatsapp" onclick="enviarWhatsApp()">Enviar por WhatsApp</button>
+
+<button class="btn exportar" onclick="exportar()">Exportar JSON</button>
+<input type="file" id="archivo" style="display:none" onchange="importar(event)">
+<button class="btn importar" onclick="document.getElementById('archivo').click()">Importar JSON</button>
+
+</div>
+
+<script>
+
+let datos = JSON.parse(localStorage.getItem("miLista")) || [];
+
+function guardar(){
+    localStorage.setItem("miLista", JSON.stringify(datos));
+}
+
+function agregar(){
+    let texto = document.getElementById("item").value.trim();
+    if(texto === "") return;
+    datos.push(texto);
+    document.getElementById("item").value = "";
+    guardar();
+    render();
+}
+
+function eliminar(index){
+    datos.splice(index,1);
+    guardar();
+    render();
+}
+
+function render(){
+    let lista = document.getElementById("lista");
+    let filtro = document.getElementById("buscador").value.toLowerCase();
+    lista.innerHTML="";
+
+    datos.forEach((item,index)=>{
+        if(item.toLowerCase().includes(filtro)){
+            let li = document.createElement("li");
+            li.innerHTML = `
+                ${item}
+                <button class="eliminar" onclick="eliminar(${index})">X</button>
+            `;
+            lista.appendChild(li);
+        }
+    });
+}
+
+function obtenerTextoLista(){
+    let texto = "📋 Lista:\n\n";
+    datos.forEach((item,index)=>{
+        texto += (index+1)+". "+item+"\n";
+    });
+    return texto;
+}
+
+function copiarLista(){
+    navigator.clipboard.writeText(obtenerTextoLista());
+    alert("Lista copiada");
+}
+
+function enviarWhatsApp(){
+    let url = "https://wa.me/?text="+encodeURIComponent(obtenerTextoLista());
+    window.open(url,"_blank");
+}
+
+function exportar(){
+    let blob = new Blob([JSON.stringify(datos)], {type:"application/json"});
+    let enlace = document.createElement("a");
+    enlace.href = URL.createObjectURL(blob);
+    enlace.download = "lista.json";
+    enlace.click();
+}
+
+function importar(event){
+    let archivo = event.target.files[0];
+    let lector = new FileReader();
+    lector.onload = function(e){
+        datos = JSON.parse(e.target.result);
+        guardar();
+        render();
+    }
+    lector.readAsText(archivo);
+}
+
+render();
+
+</script>
+
+</body>
+</html>

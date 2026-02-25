@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Formularios Pro Max</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial;
+    background:#f1f3f4;
+    display:flex;
+    justify-content:center;
+    padding:20px;
+}
+
+.app{
+    width:100%;
+    max-width:800px;
+    background:white;
+    border-radius:12px;
+    box-shadow:0 5px 20px rgba(0,0,0,0.1);
+    overflow:hidden;
+}
+
+.header{
+    background:#4e73df;
+    color:white;
+    padding:20px;
+}
+
+.section{
+    padding:20px;
+}
+
+input, textarea, select{
+    width:100%;
+    padding:10px;
+    margin-top:8px;
+    border-radius:6px;
+    border:1px solid #ccc;
+}
+
+button{
+    padding:10px;
+    margin-top:10px;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+.primary{ background:#4e73df; color:white; }
+.success{ background:#1cc88a; color:white; }
+.warning{ background:#f6c23e; }
+.danger{ background:#e74a3b; color:white; }
+
+.pregunta{
+    background:#f8f9fc;
+    padding:15px;
+    border-radius:8px;
+    margin-top:10px;
+}
+
+.formItem{
+    background:#eef2ff;
+    padding:10px;
+    border-radius:8px;
+    margin-top:8px;
+    cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<div class="header">
+<h2>📋 Formularios Pro Max</h2>
+</div>
+
+<div class="section">
+
+<h3>Crear Nuevo Formulario</h3>
+<input type="text" id="nombreForm" placeholder="Nombre del formulario">
+<button class="primary" onclick="crearFormulario()">Crear</button>
+
+<hr>
+
+<h3>Formularios</h3>
+<div id="listaForms"></div>
+
+<hr>
+
+<div id="editor" style="display:none;">
+
+<h3>Editar Preguntas</h3>
+
+<select id="tipoPregunta">
+<option value="texto">Respuesta Abierta</option>
+<option value="multiple">Opción Múltiple</option>
+</select>
+
+<input type="text" id="textoPregunta" placeholder="Texto de la pregunta">
+<textarea id="opciones" placeholder="Opciones (una por línea)"></textarea>
+
+<button class="success" onclick="agregarPregunta()">Agregar Pregunta</button>
+
+<div id="preguntasActuales"></div>
+
+<button class="primary" onclick="mostrarFormulario()">Responder</button>
+<button class="warning" onclick="exportarExcel()">Exportar a Excel</button>
+
+<div id="formResponder" style="display:none;"></div>
+
+</div>
+
+</div>
+</div>
+
+<script>
+
+let data = JSON.parse(localStorage.getItem("multiForms")) || [];
+let formActual = null;
+
+function guardar(){
+localStorage.setItem("multiForms", JSON.stringify(data));
+}
+
+function crearFormulario(){
+let nombre=document.getElementById("nombreForm").value.trim();
+if(!nombre) return;
+
+data.push({nombre:nombre,preguntas:[],respuestas:[]});
+guardar();
+renderForms();
+}
+
+function renderForms(){
+let cont=document.getElementById("listaForms");
+cont.innerHTML="";
+data.forEach((f,i)=>{
+let div=document.createElement("div");
+div.className="formItem";
+div.innerHTML=f.nombre;
+div.onclick=()=>abrirEditor(i);
+cont.appendChild(div);
+});
+}
+
+function abrirEditor(index){
+formActual=index;
+document.getElementById("editor").style.display="block";
+renderPreguntas();
+}
+
+function agregarPregunta(){
+let tipo=document.getElementById("tipoPregunta").value;
+let texto=document.getElementById("textoPregunta").value.trim();
+let opciones=document.getElementById("opciones").value.trim().split("\n");
+
+if(!texto) return;
+
+data[formActual].preguntas.push({
+tipo:tipo,
+texto:texto,
+opciones: tipo==="multiple"?opciones:[]
+});
+
+guardar();
+renderPreguntas();
+}
+
+function eliminarPregunta(i){
+data[formActual].preguntas.splice(i,1);
+guardar();
+renderPreguntas();
+}
+
+function renderPreguntas(){
+let cont=document.getElementById("preguntasActuales");
+cont.innerHTML="";
+
+data[formActual].preguntas.forEach((p,i)=>{
+let div=document.createElement("div");
+div.className="pregunta";
+div.innerHTML=`${p.texto}
+<br><button class="danger" onclick="eliminarPregunta(${i})">Eliminar</button>`;
+cont.appendChild(div);
+});
+}
+
+function mostrarFormulario(){
+let cont=document.getElementById("formResponder");
+cont.style.display="block";
+cont.innerHTML="<h3>Responder</h3><input id='nombreResp' placeholder='Nombre'>";
+
+data[formActual].preguntas.forEach((p,i)=>{
+let div=document.createElement("div");
+div.className="pregunta";
+div.innerHTML=`<b>${p.texto}</b><br>`;
+if(p.tipo==="texto"){
+div.innerHTML+=`<input id="resp${i}">`;
+}else{
+p.opciones.forEach(op=>{
+div.innerHTML+=`<label><input type="radio" name="resp${i}" value="${op}">${op}</label><br>`;
+});
+}
+cont.appendChild(div);
+});
+
+cont.innerHTML+=`<button class="success" onclick="guardarRespuestas()">Enviar Respuestas</button>`;
+}
+
+function guardarRespuestas(){
+let nombre=document.getElementById("nombreResp").value;
+let fecha=new Date().toLocaleString();
+
+let respuestas=[];
+
+data[formActual].preguntas.forEach((p,i)=>{
+let valor;
+if(p.tipo==="texto"){
+valor=document.getElementById("resp"+i).value;
+}else{
+let sel=document.querySelector(`input[name="resp${i}"]:checked`);
+valor=sel?sel.value:"";
+}
+respuestas.push({pregunta:p.texto,respuesta:valor});
+});
+
+let registro={
+codigo:"F-"+Date.now().toString(36).toUpperCase(),
+nombre:nombre,
+fecha:fecha,
+respuestas:respuestas
+};
+
+data[formActual].respuestas.push(registro);
+guardar();
+
+let texto="📋 Respuestas\n\n";
+respuestas.forEach(r=>{
+texto+=r.pregunta+"\n➡ "+r.respuesta+"\n\n";
+});
+
+window.open("https://wa.me/?text="+encodeURIComponent(texto),"_blank");
+}
+
+function exportarExcel(){
+
+let rows=[["Codigo","Nombre","Fecha","Pregunta","Respuesta"]];
+
+data[formActual].respuestas.forEach(r=>{
+r.respuestas.forEach(resp=>{
+rows.push([r.codigo,r.nombre,r.fecha,resp.pregunta,resp.respuesta]);
+});
+});
+
+let csvContent = rows.map(e => e.join(",")).join("\n");
+let blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+let link = document.createElement("a");
+link.href = URL.createObjectURL(blob);
+link.download = "respuestas.csv";
+link.click();
+}
+
+renderForms();
+
+</script>
+
+</body>
+</html>
