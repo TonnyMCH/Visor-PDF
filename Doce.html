@@ -2,36 +2,38 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Extraer texto de imagen (OCR)</title>
+  <title>OCR desde portapapeles</title>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: Arial;
       text-align: center;
       padding: 20px;
     }
     textarea {
       width: 90%;
       height: 200px;
-      margin-top: 15px;
-    }
-    button {
       margin-top: 10px;
-      padding: 10px;
-      font-size: 16px;
     }
     img {
       max-width: 300px;
       margin-top: 10px;
     }
+    .box {
+      border: 2px dashed #aaa;
+      padding: 20px;
+      margin: 15px;
+    }
   </style>
 </head>
 <body>
 
-  <h2>📷 Extraer texto de una imagen</h2>
+  <h2>📋 Pega una imagen (Ctrl + V)</h2>
 
-  <input type="file" id="imageInput" accept="image/*">
-  <br>
+  <div class="box">
+    👉 Copia una imagen y pégala aquí
+  </div>
+
   <img id="preview" />
 
   <br>
@@ -42,26 +44,33 @@
   <button onclick="copiarTexto()">📋 Copiar texto</button>
 
   <script>
-    const input = document.getElementById('imageInput');
-    const preview = document.getElementById('preview');
+    let imagenPegada = null;
 
-    input.addEventListener('change', () => {
-      const file = input.files[0];
-      preview.src = URL.createObjectURL(file);
+    document.addEventListener('paste', (event) => {
+      const items = event.clipboardData.items;
+
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf("image") !== -1) {
+          const file = items[i].getAsFile();
+          imagenPegada = file;
+
+          const url = URL.createObjectURL(file);
+          document.getElementById("preview").src = url;
+        }
+      }
     });
 
     function extraerTexto() {
-      const file = input.files[0];
-      if (!file) {
-        alert("Sube una imagen primero");
+      if (!imagenPegada) {
+        alert("Pega una imagen primero (Ctrl + V)");
         return;
       }
 
       document.getElementById("resultado").value = "Procesando...";
 
       Tesseract.recognize(
-        file,
-        'spa', // español
+        imagenPegada,
+        'spa',
         {
           logger: m => console.log(m)
         }
