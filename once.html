@@ -96,7 +96,10 @@ th,td{
 <tbody id="lista"></tbody>
 </table>
 
-<h3>Total: ₡<span id="total">0</span></h3>
+<input type="number" id="efectivo" placeholder="Efectivo recibido" oninput="calcularCambio()">
+
+<h3>Diferencia: ₡<span id="cambio">0</span></h3>
+
 <button onclick="enviarWhatsApp()">📲 Enviar factura</button>
 </section>
 
@@ -209,6 +212,7 @@ function agregarVenta(){
   </tr>`;
   document.getElementById("total").textContent=total;
   cantidad.value="";
+calcularCambio();
 }
 
 function borrarFila(i){
@@ -216,6 +220,7 @@ function borrarFila(i){
   ventas[i]=null;
   document.querySelector(`tr[data-i="${i}"]`).remove();
   document.getElementById("total").textContent=total;
+calcularCambio();
 }
 
 /* ===== IMPORTAR / EXPORTAR ===== */
@@ -262,9 +267,21 @@ function enviarWhatsApp(){
   ventas.forEach(v=>{
     if(v) msg+=`${v.f} x${v.c} = ₡${v.sub}%0A`;
   });
-  msg+=`Total: ₡${total}`;
+  const efectivo = Number(document.getElementById("efectivo").value) || 0;
+const cambio = efectivo - total;
+
+msg+=`Total: ₡${total}%0A`;
+msg+=`Efectivo: ₡${efectivo}%0A`;
+msg+=`Cambio: ₡${cambio >= 0 ? cambio : 0}`;
   window.open(`https://wa.me/?text=${msg}`);
 }
+
+function calcularCambio(){
+  const efectivo = Number(document.getElementById("efectivo").value) || 0;
+  const cambio = efectivo - total;
+  document.getElementById("cambio").textContent = cambio >= 0 ? cambio : 0;
+}
+
 
 /* ===== CARGAR MEMORIA ===== */
 window.onload=()=>{
