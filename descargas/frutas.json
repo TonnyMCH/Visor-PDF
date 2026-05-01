@@ -1,0 +1,238 @@
+{
+  "Tomate": {
+    "precio": 1200,
+    "tipo": "kilo"
+  },
+  "Pepino": {
+    "precio": 1000,
+    "tipo": "kilo"
+  },
+  "Yuca ": {
+    "precio": 1200,
+    "tipo": "kilo"
+  },
+  "Sandía 🍉": {
+    "precio": 700,
+    "tipo": "kilo"
+  },
+  "Mandarinas": {
+    "precio": 100,
+    "tipo": "unidad"
+  },
+  "Naranja": {
+    "precio": 100,
+    "tipo": "unidad"
+  },
+  "Melón 🍈": {
+    "precio": 1000,
+    "tipo": "kilo"
+  },
+  "Manzana 🍎": {
+    "precio": 250,
+    "tipo": "unidad"
+  },
+  "Piña 🍍": {
+    "precio": 1000,
+    "tipo": "unidad"
+  },
+  "Tapa Dulce ": {
+    "precio": 1800,
+    "tipo": "unidad"
+  },
+  "Papaya": {
+    "precio": 700,
+    "tipo": "kilo"
+  },
+  "Zanahoria 🥕": {
+    "precio": 1000,
+    "tipo": "kilo"
+  },
+  "Miel 🐝 Grande": {
+    "precio": 7000,
+    "tipo": "unidad"
+  },
+  "Miel 🐝 Pequeña ": {
+    "precio": 4500,
+    "tipo": "unidad"
+  },
+  "Frasco chile verde 🌶️": {
+    "precio": 3500,
+    "tipo": "unidad"
+  },
+  "Salsa caribeña ": {
+    "precio": 1700,
+    "tipo": "unidad"
+  },
+  "Café ☕": {
+    "precio": 2500,
+    "tipo": "unidad"
+  },
+  "Guaba ": {
+    "precio": 400,
+    "tipo": "unidad"
+  },
+  "Pejibaye": {
+    "precio": 2500,
+    "tipo": "kilo"
+  },
+  "Tres por Chayote ": {
+    "precio": 1000,
+    "tipo": "unidad"
+  },
+  "Maya ajo": {
+    "precio": 500,
+    "tipo": "unidad"
+  },
+  "Patatus": {
+    "precio": 5000,
+    "tipo": "unidad"
+  },
+  "Botella Chilera": {
+    "precio": 2500,
+    "tipo": "unidad"
+  },
+  "Batea Hoja 🌿": {
+    "precio": 1500,
+    "tipo": "unidad"
+  },
+  "Batea": {
+    "precio": 8000,
+    "tipo": "unidad"
+  },
+  "Chiberre ": {
+    "precio": 5000,
+    "tipo": "unidad"
+  },
+  "Remolacha 🫜": {
+    "precio": 600,
+    "tipo": "unidad"
+  },
+  "Repollo 🥦": {
+    "precio": 1000,
+    "tipo": "kilo"
+  },
+  "Platanitos": {
+    "precio": 500,
+    "tipo": "unidad"
+  },
+  "Calabaza rosada": {
+    "precio": 1000,
+    "tipo": "unidad"
+  },
+  "Cocas": {
+    "precio": 800,
+    "tipo": "unidad"
+  },
+  "Agua": {
+    "precio": 600,
+    "tipo": "unidad"
+  },
+  "Cebolla 🧅 morada": {
+    "precio": 2000,
+    "tipo": "kilo"
+  },
+  "Pipa": {
+    "precio": 500,
+    "tipo": "unidad"
+  },
+  "Papa": {
+    "precio": 1300,
+    "tipo": "kilo"
+  },
+  "Cebolla": {
+    "precio": 1500,
+    "tipo": "kilo"
+  },
+  "Chile 🌶️": {
+    "precio": 500,
+    "tipo": "unidad"
+  },
+  "Mango 🥭": {
+    "precio": 1200,
+    "tipo": "kilo"
+  },
+  "Granadilla ": {
+    "precio": 200,
+    "tipo": "unidad"
+  },
+  "Ya Frut": {
+    "precio": 8000,
+    "tipo": "unidad"
+  },
+  "Ayote 🎃": {
+    "precio": 2500,
+    "tipo": "unidad"
+  },
+  "Aguacate 🥑": {
+    "precio": 2000,
+    "tipo": "kilo"
+  },
+  "Aguacate uno 🥑": {
+    "precio": 500,
+    "tipo": "unidad"
+  },
+  "Guanabana ": {
+    "precio": 1300,
+    "tipo": "kilo"
+  },
+  "Camote 🍠": {
+    "precio": 1300,
+    "tipo": "kilo"
+  },
+  "Maracuya": {
+    "precio": 1500,
+    "tipo": "kilo"
+  },
+  "Lechuga 🥬": {
+    "precio": 500,
+    "tipo": "unidad"
+  },
+  "Culantro 🌿": {
+    "precio": 500,
+    "tipo": "unidad"
+  },
+  "Ayote tierno ": {
+    "precio": 800,
+    "tipo": "unidad"
+  },
+  "Cocos 🥥": {
+    "precio": 700,
+    "tipo": "unidad"
+  },
+  "Nona": {
+    "precio": 2200,
+    "tipo": "kilo"
+  },
+  "Platano 🍌": {
+    "precio": 200,
+    "tipo": "unidad"
+  },
+  "Banano": {
+    "precio": 25,
+    "tipo": "unidad"
+  },
+  "Racimo de banano grande": {
+    "precio": 3500,
+    "tipo": "unidad"
+  },
+  "Racimo de Banano pequeño ": {
+    "precio": 3000,
+    "tipo": "unidad"
+  },
+  "Otros": {
+    "precio": 1,
+    "tipo": "unidad"
+  },
+  "Salsas ": {
+    "precio": 1800,
+    "tipo": "unidad"
+  },
+  "Coca": {
+    "precio": 800,
+    "tipo": "unidad"
+  },
+  "Camote": {
+    "precio": 1300,
+    "tipo": "kilo"
+  }
+}
