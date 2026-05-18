@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TTS México - Dalia</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial, sans-serif;
+    background:#f2f2f2;
+}
+
+header{
+    background:#0d6efd;
+    color:white;
+    padding:15px;
+    text-align:center;
+    font-size:22px;
+    font-weight:bold;
+}
+
+.contenedor{
+    padding:10px;
+}
+
+iframe{
+    width:100%;
+    height:90vh;
+    border:none;
+    border-radius:12px;
+    background:white;
+    box-shadow:0 0 10px rgba(0,0,0,0.2);
+}
+</style>
+</head>
+<body>
+
+<header>
+TTS Español México - Dalia
+</header>
+
+<div class="contenedor">
+<iframe 
+src="https://ttsfree.com/text-to-speech/spanish-mexico">
+</iframe>
+</div>
+
+<script>
+// Intentar seleccionar automáticamente la voz Dalia
+window.addEventListener("load", () => {
+
+    const iframe = document.querySelector("iframe");
+
+    iframe.onload = () => {
+
+        try{
+            const doc = iframe.contentWindow.document;
+
+            // Buscar selects
+            const selects = doc.querySelectorAll("select");
+
+            selects.forEach(select => {
+
+                // Seleccionar Español México
+                for(let option of select.options){
+                    if(option.text.includes("Spanish (Mexico)") || option.text.includes("Español")){
+                        select.value = option.value;
+                        select.dispatchEvent(new Event('change'));
+                    }
+                }
+
+                // Seleccionar Dalia
+                setTimeout(() => {
+                    for(let option of select.options){
+                        if(option.text.includes("Dalia")){
+                            select.value = option.value;
+                            select.dispatchEvent(new Event('change'));
+                        }
+                    }
+                }, 1500);
+
+            });
+
+        }catch(e){
+            console.log("No se pudo auto seleccionar.");
+        }
+
+    };
+
+});
+</script>
+
+</body>
+</html>
