@@ -1,91 +1,96 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>OCR desde portapapeles</title>
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-  <style>
-    body {
-      font-family: Arial;
-      text-align: center;
-      padding: 20px;
-    }
-    textarea {
-      width: 90%;
-      height: 200px;
-      margin-top: 10px;
-    }
-    img {
-      max-width: 300px;
-      margin-top: 10px;
-    }
-    .box {
-      border: 2px dashed #aaa;
-      padding: 20px;
-      margin: 15px;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TTS México - Dalia</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial, sans-serif;
+    background:#f2f2f2;
+}
+
+header{
+    background:#0d6efd;
+    color:white;
+    padding:15px;
+    text-align:center;
+    font-size:22px;
+    font-weight:bold;
+}
+
+.contenedor{
+    padding:10px;
+}
+
+iframe{
+    width:100%;
+    height:90vh;
+    border:none;
+    border-radius:12px;
+    background:white;
+    box-shadow:0 0 10px rgba(0,0,0,0.2);
+}
+</style>
 </head>
 <body>
 
-  <h2>📋 Pega una imagen (Ctrl + V)</h2>
+<header>
+TTS Español México - Dalia
+</header>
 
-  <div class="box">
-    👉 Copia una imagen y pégala aquí
-  </div>
+<div class="contenedor">
+<iframe 
+src="https://ttsfree.com/text-to-speech/spanish-mexico">
+</iframe>
+</div>
 
-  <img id="preview" />
+<script>
+// Intentar seleccionar automáticamente la voz Dalia
+window.addEventListener("load", () => {
 
-  <br>
-  <button onclick="extraerTexto()">🔍 Extraer texto</button>
+    const iframe = document.querySelector("iframe");
 
-  <textarea id="resultado" placeholder="Aquí aparecerá el texto..."></textarea>
-  <br>
-  <button onclick="copiarTexto()">📋 Copiar texto</button>
+    iframe.onload = () => {
 
-  <script>
-    let imagenPegada = null;
+        try{
+            const doc = iframe.contentWindow.document;
 
-    document.addEventListener('paste', (event) => {
-      const items = event.clipboardData.items;
+            // Buscar selects
+            const selects = doc.querySelectorAll("select");
 
-      for (let i = 0; i < items.length; i++) {
-        if (items[i].type.indexOf("image") !== -1) {
-          const file = items[i].getAsFile();
-          imagenPegada = file;
+            selects.forEach(select => {
 
-          const url = URL.createObjectURL(file);
-          document.getElementById("preview").src = url;
+                // Seleccionar Español México
+                for(let option of select.options){
+                    if(option.text.includes("Spanish (Mexico)") || option.text.includes("Español")){
+                        select.value = option.value;
+                        select.dispatchEvent(new Event('change'));
+                    }
+                }
+
+                // Seleccionar Dalia
+                setTimeout(() => {
+                    for(let option of select.options){
+                        if(option.text.includes("Dalia")){
+                            select.value = option.value;
+                            select.dispatchEvent(new Event('change'));
+                        }
+                    }
+                }, 1500);
+
+            });
+
+        }catch(e){
+            console.log("No se pudo auto seleccionar.");
         }
-      }
-    });
 
-    function extraerTexto() {
-      if (!imagenPegada) {
-        alert("Pega una imagen primero (Ctrl + V)");
-        return;
-      }
+    };
 
-      document.getElementById("resultado").value = "Procesando...";
-
-      Tesseract.recognize(
-        imagenPegada,
-        'spa',
-        {
-          logger: m => console.log(m)
-        }
-      ).then(({ data: { text } }) => {
-        document.getElementById("resultado").value = text;
-      });
-    }
-
-    function copiarTexto() {
-      const texto = document.getElementById("resultado");
-      texto.select();
-      document.execCommand("copy");
-      alert("Texto copiado ✅");
-    }
-  </script>
+});
+</script>
 
 </body>
 </html>
