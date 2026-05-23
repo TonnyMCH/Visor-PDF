@@ -3,93 +3,349 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TTS México - Dalia</title>
+<title>OCR PRO</title>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
 <style>
+*{
+    box-sizing:border-box;
+}
+
 body{
     margin:0;
     font-family:Arial, sans-serif;
-    background:#f2f2f2;
-}
-
-header{
-    background:#0d6efd;
+    background:#111827;
     color:white;
-    padding:15px;
-    text-align:center;
-    font-size:22px;
-    font-weight:bold;
+    display:flex;
+    justify-content:center;
+    padding:20px;
 }
 
-.contenedor{
-    padding:10px;
-}
-
-iframe{
+.container{
     width:100%;
-    height:90vh;
+    max-width:900px;
+}
+
+h1{
+    text-align:center;
+    margin-bottom:10px;
+}
+
+.subtitle{
+    text-align:center;
+    color:#cbd5e1;
+    margin-bottom:25px;
+}
+
+.drop-zone{
+    border:3px dashed #4b5563;
+    border-radius:20px;
+    padding:30px;
+    text-align:center;
+    background:#1f2937;
+    transition:0.3s;
+    cursor:pointer;
+}
+
+.drop-zone.dragover{
+    border-color:#3b82f6;
+    background:#1e3a8a;
+}
+
+.drop-zone p{
+    margin:10px 0;
+    color:#d1d5db;
+}
+
+.preview-container{
+    margin-top:20px;
+    text-align:center;
+}
+
+#preview{
+    max-width:100%;
+    max-height:350px;
+    border-radius:15px;
+    display:none;
+    border:2px solid #374151;
+}
+
+.buttons{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    justify-content:center;
+    margin-top:20px;
+}
+
+button{
     border:none;
+    padding:12px 18px;
     border-radius:12px;
-    background:white;
-    box-shadow:0 0 10px rgba(0,0,0,0.2);
+    cursor:pointer;
+    font-size:16px;
+    font-weight:bold;
+    transition:0.2s;
+}
+
+button:hover{
+    transform:scale(1.03);
+}
+
+.primary{
+    background:#2563eb;
+    color:white;
+}
+
+.success{
+    background:#059669;
+    color:white;
+}
+
+.danger{
+    background:#dc2626;
+    color:white;
+}
+
+textarea{
+    width:100%;
+    height:250px;
+    margin-top:20px;
+    border:none;
+    border-radius:15px;
+    padding:15px;
+    font-size:16px;
+    resize:none;
+    background:#1f2937;
+    color:white;
+}
+
+.progress-box{
+    margin-top:15px;
+    text-align:center;
+}
+
+.progress{
+    width:100%;
+    height:18px;
+    background:#374151;
+    border-radius:10px;
+    overflow:hidden;
+}
+
+.progress-bar{
+    height:100%;
+    width:0%;
+    background:#3b82f6;
+    transition:0.2s;
+}
+
+.status{
+    margin-top:8px;
+    color:#cbd5e1;
+}
+
+footer{
+    margin-top:25px;
+    text-align:center;
+    color:#9ca3af;
+    font-size:14px;
+}
+
+@media(max-width:600px){
+    button{
+        width:100%;
+    }
 }
 </style>
 </head>
 <body>
 
-<header>
-TTS Español México - Dalia
-</header>
+<div class="container">
 
-<div class="contenedor">
-<iframe 
-src="https://ttsfree.com/text-to-speech/spanish-mexico">
-</iframe>
+<h1>📄 OCR PRO</h1>
+<div class="subtitle">
+Sube, pega o arrastra una imagen para extraer texto
+</div>
+
+<div class="drop-zone" id="dropZone">
+    <h2>📥 Arrastra una imagen aquí</h2>
+    <p>o haz clic para seleccionar</p>
+    <p>También puedes pegar con <b>Ctrl + V</b></p>
+
+    <input type="file" id="fileInput" accept="image/*" hidden>
+</div>
+
+<div class="preview-container">
+    <img id="preview">
+</div>
+
+<div class="buttons">
+    <button class="primary" onclick="extraerTexto()">
+        🔍 Extraer texto
+    </button>
+
+    <button class="success" onclick="copiarTexto()">
+        📋 Copiar texto
+    </button>
+
+    <button class="danger" onclick="limpiarTodo()">
+        🗑 Limpiar
+    </button>
+</div>
+
+<div class="progress-box">
+    <div class="progress">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <div class="status" id="status">
+        Esperando imagen...
+    </div>
+</div>
+
+<textarea id="resultado" placeholder="Aquí aparecerá el texto extraído..."></textarea>
+
+<footer>
+OCR PRO • Funciona con Tesseract.js
+</footer>
+
 </div>
 
 <script>
-// Intentar seleccionar automáticamente la voz Dalia
-window.addEventListener("load", () => {
+let imagenActual = null;
 
-    const iframe = document.querySelector("iframe");
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const preview = document.getElementById('preview');
 
-    iframe.onload = () => {
+dropZone.addEventListener('click', () => {
+    fileInput.click();
+});
 
-        try{
-            const doc = iframe.contentWindow.document;
+fileInput.addEventListener('change', (e) => {
+    cargarImagen(e.target.files[0]);
+});
 
-            // Buscar selects
-            const selects = doc.querySelectorAll("select");
+dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('dragover');
+});
 
-            selects.forEach(select => {
+dropZone.addEventListener('dragleave', () => {
+    dropZone.classList.remove('dragover');
+});
 
-                // Seleccionar Español México
-                for(let option of select.options){
-                    if(option.text.includes("Spanish (Mexico)") || option.text.includes("Español")){
-                        select.value = option.value;
-                        select.dispatchEvent(new Event('change'));
+dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+
+    const file = e.dataTransfer.files[0];
+
+    if(file){
+        cargarImagen(file);
+    }
+});
+
+document.addEventListener('paste', (event) => {
+    const items = event.clipboardData.items;
+
+    for(let i=0;i<items.length;i++){
+
+        if(items[i].type.indexOf("image") !== -1){
+
+            const file = items[i].getAsFile();
+
+            cargarImagen(file);
+        }
+    }
+});
+
+function cargarImagen(file){
+
+    imagenActual = file;
+
+    const url = URL.createObjectURL(file);
+
+    preview.src = url;
+    preview.style.display = 'block';
+
+    document.getElementById('status').innerText =
+        "Imagen cargada ✅";
+}
+
+async function extraerTexto(){
+
+    if(!imagenActual){
+        alert("Carga o pega una imagen primero");
+        return;
+    }
+
+    document.getElementById('resultado').value = "";
+
+    const progressBar = document.getElementById('progressBar');
+    const status = document.getElementById('status');
+
+    status.innerText = "Procesando imagen...";
+
+    const result = await Tesseract.recognize(
+        imagenActual,
+        'spa',
+        {
+            logger: m => {
+
+                if(m.status){
+
+                    status.innerText = m.status;
+
+                    if(m.progress){
+
+                        const porcentaje =
+                            Math.floor(m.progress * 100);
+
+                        progressBar.style.width =
+                            porcentaje + "%";
                     }
                 }
-
-                // Seleccionar Dalia
-                setTimeout(() => {
-                    for(let option of select.options){
-                        if(option.text.includes("Dalia")){
-                            select.value = option.value;
-                            select.dispatchEvent(new Event('change'));
-                        }
-                    }
-                }, 1500);
-
-            });
-
-        }catch(e){
-            console.log("No se pudo auto seleccionar.");
+            }
         }
+    );
 
-    };
+    document.getElementById('resultado').value =
+        result.data.text;
 
-});
+    status.innerText =
+        "Texto extraído correctamente ✅";
+}
+
+function copiarTexto(){
+
+    const textarea =
+        document.getElementById('resultado');
+
+    textarea.select();
+
+    document.execCommand('copy');
+
+    alert("Texto copiado ✅");
+}
+
+function limpiarTodo(){
+
+    imagenActual = null;
+
+    preview.src = "";
+    preview.style.display = "none";
+
+    document.getElementById('resultado').value = "";
+
+    document.getElementById('progressBar').style.width =
+        "0%";
+
+    document.getElementById('status').innerText =
+        "Esperando imagen...";
+}
 </script>
 
 </body>
