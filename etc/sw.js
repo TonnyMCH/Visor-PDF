@@ -1,21 +1,21 @@
-self.addEventListener('install', event => {
-    console.log('Service Worker instalado');
-    event.waitUntil(
-        caches.open('v1').then(cache => {
-            return cache.addAll([
-                '/',
-                '/Contador.html',
-                '/imagen.jpg',
-                '/icon.png'
-            ]);
-        })
+const CACHE = "contador-v1";
+
+const archivos = [
+    "./",
+    "./Contador.html",
+    "./manifest.json"
+];
+
+self.addEventListener("install", e => {
+    e.waitUntil(
+        caches.open(CACHE)
+        .then(cache => cache.addAll(archivos))
     );
 });
 
-self.addEventListener('fetch', event => {
-    event.respondWith(
-        caches.match(event.request).then(response => {
-            return response || fetch(event.request);
-        })
+self.addEventListener("fetch", e => {
+    e.respondWith(
+        caches.match(e.request)
+        .then(resp => resp || fetch(e.request))
     );
 });
