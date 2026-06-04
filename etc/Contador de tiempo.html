@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contador de Tiempo</title>
+
+<style>
+    body{
+        font-family: Arial, sans-serif;
+        background:#f2f2f2;
+        margin:0;
+        padding:20px;
+    }
+
+    h1{
+        text-align:center;
+        color:#333;
+    }
+
+    .contenedor{
+        max-width:700px;
+        margin:auto;
+    }
+
+    .formulario{
+        background:white;
+        padding:20px;
+        border-radius:15px;
+        box-shadow:0 0 10px rgba(0,0,0,0.1);
+        margin-bottom:20px;
+    }
+
+    input, textarea, button{
+        width:100%;
+        margin-top:10px;
+        padding:12px;
+        border-radius:10px;
+        border:1px solid #ccc;
+        box-sizing:border-box;
+        font-size:16px;
+    }
+
+    textarea{
+        resize:none;
+        height:80px;
+    }
+
+    button{
+        background:#007bff;
+        color:white;
+        border:none;
+        cursor:pointer;
+        font-weight:bold;
+    }
+
+    button:hover{
+        background:#0056b3;
+    }
+
+    .tarjeta{
+        background:white;
+        padding:15px;
+        border-radius:15px;
+        margin-bottom:15px;
+        box-shadow:0 0 8px rgba(0,0,0,0.08);
+    }
+
+    .detalle{
+        font-size:18px;
+        font-weight:bold;
+        color:#333;
+    }
+
+    .fecha{
+        color:#666;
+        margin-top:5px;
+    }
+
+    .tiempo{
+        margin-top:10px;
+        font-size:17px;
+        color:#007bff;
+        font-weight:bold;
+    }
+
+    .eliminar{
+        background:#dc3545;
+        margin-top:15px;
+    }
+
+    .eliminar:hover{
+        background:#a71d2a;
+    }
+</style>
+</head>
+<body>
+
+<div class="contenedor">
+
+<h1>📅 Contador de Tiempo</h1>
+
+<div class="formulario">
+    <input type="date" id="fecha">
+
+    <textarea id="detalle" placeholder="Escribe el detalle..."></textarea>
+
+    <button onclick="agregarEvento()">Agregar</button>
+</div>
+
+<div id="lista"></div>
+
+</div>
+
+<script>
+let eventos = JSON.parse(localStorage.getItem("eventos")) || [];
+
+function guardar(){
+    localStorage.setItem("eventos", JSON.stringify(eventos));
+}
+
+function calcularTiempo(fechaInicio){
+
+    const inicio = new Date(fechaInicio);
+    const hoy = new Date();
+
+    let años = hoy.getFullYear() - inicio.getFullYear();
+    let meses = hoy.getMonth() - inicio.getMonth();
+    let dias = hoy.getDate() - inicio.getDate();
+
+    if(dias < 0){
+        meses--;
+        const ultimoMes = new Date(hoy.getFullYear(), hoy.getMonth(), 0);
+        dias += ultimoMes.getDate();
+    }
+
+    if(meses < 0){
+        años--;
+        meses += 12;
+    }
+
+    return `${años} años, ${meses} meses y ${dias} días`;
+}
+
+function mostrarEventos(){
+
+    const lista = document.getElementById("lista");
+    lista.innerHTML = "";
+
+    eventos.forEach((evento, index) => {
+
+        lista.innerHTML += `
+            <div class="tarjeta">
+                <div class="detalle">${evento.detalle}</div>
+
+                <div class="fecha">
+                    Fecha: ${evento.fecha}
+                </div>
+
+                <div class="tiempo">
+                    ⏳ Han pasado:
+                    ${calcularTiempo(evento.fecha)}
+                </div>
+
+                <button class="eliminar" onclick="eliminarEvento(${index})">
+                    Eliminar
+                </button>
+            </div>
+        `;
+    });
+}
+
+function agregarEvento(){
+
+    const fecha = document.getElementById("fecha").value;
+    const detalle = document.getElementById("detalle").value;
+
+    if(!fecha || !detalle){
+        alert("Completa todos los campos");
+        return;
+    }
+
+    eventos.unshift({
+        fecha,
+        detalle
+    });
+
+    guardar();
+    mostrarEventos();
+
+    document.getElementById("fecha").value = "";
+    document.getElementById("detalle").value = "";
+}
+
+function eliminarEvento(index){
+
+    if(confirm("¿Eliminar este registro?")){
+        eventos.splice(index, 1);
+        guardar();
+        mostrarEventos();
+    }
+}
+
+mostrarEventos();
+</script>
+
+</body>
+</html>
