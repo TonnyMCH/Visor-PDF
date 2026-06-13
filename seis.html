@@ -142,10 +142,29 @@
     const hoy = new Date();
     const p = fecha.split("-");
     const nac = new Date(p[0], p[1] - 1, p[2]);
-    let edad = hoy.getFullYear() - nac.getFullYear();
-    const m = hoy.getMonth() - nac.getMonth();
-    if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad--;
-    return edad;
+    let años = hoy.getFullYear() - nac.getFullYear();
+    let meses = hoy.getMonth() - nac.getMonth();
+    let dias = hoy.getDate() - nac.getDate();
+
+    // Ajustar días negativos
+    if (dias < 0) {
+      meses--;
+      const mesAnterior = new Date(hoy.getFullYear(), hoy.getMonth(), 0);
+      dias += mesAnterior.getDate();
+    }
+
+    // Ajustar meses negativos
+    if (meses < 0) {
+      años--;
+      meses += 12;
+    }
+
+    return { años, meses, dias };
+  }
+
+  function formatearEdad(fecha) {
+    const { años, meses, dias } = calcularEdad(fecha);
+    return `${años} años, ${meses} meses y ${dias} días`;
   }
 
   function nombreMes(m) {
@@ -260,7 +279,7 @@
           <p>ID: <span>${p.id}</span></p>
           <p>Nombre: <span>${p.nombre}</span></p>
           <p>Grupo: <span>${p.grupo}</span></p>
-          <p>Edad: <span>${calcularEdad(p.nacimiento)}</span> años</p>
+          <p>Edad: <span>${formatearEdad(p.nacimiento)}</span></p>
           <p>🎂 Próximo cumpleaños: <span>${proximoCumple(p.nacimiento)}</span></p>
           <div class="acciones-card">
             <button class="editar" onclick="editar('${p.id}')">✏️ Editar</button>
@@ -302,7 +321,7 @@
 
   function ordenarPorEdad() {
     const p = obtenerPersonas();
-    p.sort((a,b)=>calcularEdad(b.nacimiento)-calcularEdad(a.nacimiento));
+    p.sort((a,b)=>calcularEdad(b.nacimiento).años-calcularEdad(a.nacimiento).años);
     guardarPersonas(p);
     aplicarFiltros();
   }
