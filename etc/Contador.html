@@ -68,6 +68,37 @@ if ("serviceWorker" in navigator) {
         background:#0056b3;
     }
 
+    .botones-grupo{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:10px;
+    }
+
+    .botones-grupo button{
+        margin-top:0;
+    }
+
+    .btn-exportar{
+        background:#28a745;
+    }
+
+    .btn-exportar:hover{
+        background:#218838;
+    }
+
+    .btn-importar{
+        background:#ffc107;
+        color:#333;
+    }
+
+    .btn-importar:hover{
+        background:#e0a800;
+    }
+
+    #archivoImport{
+        display:none;
+    }
+
     .tarjeta{
         background:white;
         padding:15px;
@@ -102,6 +133,27 @@ if ("serviceWorker" in navigator) {
     .eliminar:hover{
         background:#a71d2a;
     }
+
+    .mensaje{
+        padding:10px;
+        border-radius:5px;
+        margin-bottom:10px;
+        display:none;
+    }
+
+    .mensaje.exito{
+        background:#d4edda;
+        color:#155724;
+        border:1px solid #c3e6cb;
+        display:block;
+    }
+
+    .mensaje.error{
+        background:#f8d7da;
+        color:#721c24;
+        border:1px solid #f5c6cb;
+        display:block;
+    }
 </style>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#007bff">
@@ -115,12 +167,21 @@ if ("serviceWorker" in navigator) {
 
 <h1>📅 Contador de Tiempo</h1>
 
+<div id="mensaje" class="mensaje"></div>
+
 <div class="formulario">
     <input type="date" id="fecha">
 
     <textarea id="detalle" placeholder="Escribe el detalle..."></textarea>
 
     <button onclick="agregarEvento()">Agregar</button>
+
+    <div class="botones-grupo">
+        <button class="btn-exportar" onclick="exportarDatos()">📥 Exportar</button>
+        <button class="btn-importar" onclick="document.getElementById('archivoImport').click()">📤 Importar</button>
+    </div>
+
+    <input type="file" id="archivoImport" accept=".json" onchange="importarDatos(event)">
 </div>
 
 <div id="lista"></div>
@@ -132,6 +193,16 @@ let eventos = JSON.parse(localStorage.getItem("eventos")) || [];
 
 function guardar(){
     localStorage.setItem("eventos", JSON.stringify(eventos));
+}
+
+function mostrarMensaje(texto, tipo){
+    const mensaje = document.getElementById("mensaje");
+    mensaje.textContent = texto;
+    mensaje.className = `mensaje ${tipo}`;
+    
+    setTimeout(() => {
+        mensaje.className = "mensaje";
+    }, 3000);
 }
 
 function calcularTiempo(fechaInicio){
@@ -162,6 +233,11 @@ function mostrarEventos(){
     const lista = document.getElementById("lista");
     lista.innerHTML = "";
 
+    if(eventos.length === 0){
+        lista.innerHTML = "<p style='text-align:center; color:#999;'>No hay registros aún</p>";
+        return;
+    }
+
     eventos.forEach((evento, index) => {
 
         lista.innerHTML += `
@@ -191,7 +267,7 @@ function agregarEvento(){
     const detalle = document.getElementById("detalle").value;
 
     if(!fecha || !detalle){
-        alert("Completa todos los campos");
+        mostrarMensaje("⚠️ Completa todos los campos", "error");
         return;
     }
 
@@ -202,6 +278,7 @@ function agregarEvento(){
 
     guardar();
     mostrarEventos();
+    mostrarMensaje("✅ Evento agregado correctamente", "exito");
 
     document.getElementById("fecha").value = "";
     document.getElementById("detalle").value = "";
@@ -213,7 +290,68 @@ function eliminarEvento(index){
         eventos.splice(index, 1);
         guardar();
         mostrarEventos();
+        mostrarMensaje("✅ Evento eliminado", "exito");
     }
+}
+
+function exportarDatos(){
+    if(eventos.length === 0){
+        mostrarMensaje("⚠️ No hay datos para exportar", "error");
+        return;
+    }
+
+    const datos = {
+        version: "1.0",
+        fecha_exportacion: new Date().toISOString(),
+        eventos: eventos
+    };
+
+    const contenido = JSON.stringify(datos, null, 2);
+    const blob = new Blob([contenido], {type: "application/json"});
+    const url = URL.createObjectURL(blob);
+    const enlace = document.createElement("a");
+    enlace.href = url;
+    enlace.download = `contador-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(enlace);
+    enlace.click();
+    document.body.removeChild(enlace);
+    URL.revokeObjectURL(url);
+
+    mostrarMensaje("✅ Datos exportados correctamente", "exito");
+}
+
+function importarDatos(event){
+    const archivo = event.target.files[0];
+
+    if(!archivo){
+        return;
+    }
+
+    const lector = new FileReader();
+
+    lector.onload = function(e){
+        try{
+            const datos = JSON.parse(e.target.result);
+
+            if(!datos.eventos || !Array.isArray(datos.eventos)){
+                mostrarMensaje("❌ Formato de archivo inválido", "error");
+                return;
+            }
+
+            if(confirm("¿Deseas reemplazar todos los datos actuales? Esta acción no se puede deshacer.")){
+                eventos = datos.eventos;
+                guardar();
+                mostrarEventos();
+                mostrarMensaje(`✅ ${eventos.length} registros importados correctamente`, "exito");
+            }
+        } catch(error){
+            mostrarMensaje("❌ Error al leer el archivo", "error");
+            console.error(error);
+        }
+    };
+
+    lector.readAsText(archivo);
+    document.getElementById("archivoImport").value = "";
 }
 
 mostrarEventos();
