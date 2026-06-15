@@ -1,1 +1,243 @@
-1
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guardar Texto</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 30px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 200px;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-save {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-clear {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-clear:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-delete {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #ee5a52;
+            transform: translateY(-2px);
+        }
+
+        .info-box {
+            background: #f8f9ff;
+            border-left: 4px solid #667eea;
+            padding: 12px;
+            margin-top: 20px;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #555;
+        }
+
+        .character-count {
+            text-align: right;
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .success-message {
+            display: none;
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #c3e6cb;
+        }
+
+        .success-message.show {
+            display: block;
+            animation: slideIn 0.3s ease-in-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📝 Guardar Texto</h1>
+        <p class="subtitle">Guarda tu texto aquí y se mantendrá guardado incluso si cierras la página</p>
+
+        <div class="success-message" id="successMessage">
+            ✓ ¡Texto guardado exitosamente!
+        </div>
+
+        <div class="form-group">
+            <label for="textarea">Tu texto:</label>
+            <textarea id="textarea" placeholder="Escribe aquí el texto que quieres guardar..."></textarea>
+            <div class="character-count">
+                <span id="charCount">0</span> caracteres
+            </div>
+        </div>
+
+        <div class="buttons">
+            <button class="btn-save" onclick="guardarTexto()">💾 Guardar</button>
+            <button class="btn-clear" onclick="limpiarTexto()">🗑️ Limpiar</button>
+            <button class="btn-delete" onclick="eliminarGuardado()">🗑️ Eliminar guardado</button>
+        </div>
+
+        <div class="info-box">
+            <strong>💡 Información:</strong> Tu texto se guarda en el navegador. Puedes cerrar la página y cuando regreses, tu texto seguirá aquí.
+        </div>
+    </div>
+
+    <script>
+        const textarea = document.getElementById('textarea');
+        const charCount = document.getElementById('charCount');
+        const successMessage = document.getElementById('successMessage');
+
+        // Cargar texto guardado al abrir la página
+        window.addEventListener('DOMContentLoaded', cargarTexto);
+
+        // Actualizar contador de caracteres
+        textarea.addEventListener('input', function() {
+            charCount.textContent = this.value.length;
+        });
+
+        function guardarTexto() {
+            const texto = textarea.value;
+            localStorage.setItem('textoGuardado', texto);
+            
+            // Mostrar mensaje de éxito
+            successMessage.classList.add('show');
+            setTimeout(() => {
+                successMessage.classList.remove('show');
+            }, 2000);
+        }
+
+        function cargarTexto() {
+            const textoGuardado = localStorage.getItem('textoGuardado');
+            if (textoGuardado) {
+                textarea.value = textoGuardado;
+                charCount.textContent = textoGuardado.length;
+            }
+        }
+
+        function limpiarTexto() {
+            textarea.value = '';
+            charCount.textContent = '0';
+        }
+
+        function eliminarGuardado() {
+            if (confirm('¿Estás seguro de que quieres eliminar el texto guardado?')) {
+                localStorage.removeItem('textoGuardado');
+                textarea.value = '';
+                charCount.textContent = '0';
+                successMessage.textContent = '✓ Texto eliminado';
+                successMessage.classList.add('show');
+                setTimeout(() => {
+                    successMessage.classList.remove('show');
+                }, 2000);
+            }
+        }
+    </script>
+</body>
+</html>
