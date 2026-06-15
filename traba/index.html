@@ -68,10 +68,138 @@ input[type="range"]{
     color:white;
 }
 
+#guardar{
+    background:#2196f3;
+    color:white;
+}
+
+#leer{
+    background:#ff9800;
+    color:white;
+}
+
 .info{
     margin-top:10px;
     font-size:14px;
     color:#555;
+}
+
+.guardados-container{
+    margin-top:30px;
+    background:white;
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0 2px 4px rgba(0,0,0,0.1);
+}
+
+.guardados-container h2{
+    margin-top:0;
+    color:#333;
+}
+
+.lista-guardados{
+    list-style:none;
+    padding:0;
+    margin:0;
+}
+
+.item-guardado{
+    background:#f9f9f9;
+    padding:12px;
+    margin:8px 0;
+    border-radius:8px;
+    border-left:4px solid #2196f3;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+}
+
+.info-guardado{
+    flex:1;
+    cursor:pointer;
+    overflow:hidden;
+}
+
+.nombre-guardado{
+    font-weight:bold;
+    color:#333;
+}
+
+.texto-preview{
+    font-size:12px;
+    color:#888;
+    margin-top:4px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.botones-item{
+    display:flex;
+    gap:5px;
+}
+
+.btn-cargar,
+.btn-eliminar,
+.btn-editar{
+    padding:6px 12px;
+    font-size:14px;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+}
+
+.btn-cargar{
+    background:#4caf50;
+    color:white;
+}
+
+.btn-cargar:hover{
+    background:#45a049;
+}
+
+.btn-editar{
+    background:#ff9800;
+    color:white;
+}
+
+.btn-editar:hover{
+    background:#e68900;
+}
+
+.btn-eliminar{
+    background:#f44336;
+    color:white;
+}
+
+.btn-eliminar:hover{
+    background:#da190b;
+}
+
+.sin-guardados{
+    color:#999;
+    text-align:center;
+    padding:20px;
+    font-style:italic;
+}
+
+.input-grupo{
+    display:flex;
+    gap:10px;
+    margin-bottom:15px;
+}
+
+#nombreTexto{
+    flex:1;
+    padding:10px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    font-size:14px;
+}
+
+#nombreTexto::placeholder{
+    color:#aaa;
 }
 </style>
 </head>
@@ -89,7 +217,11 @@ placeholder="Pega aquí tu lectura..."></textarea>
 📋 Pegar
 </button>
 
-<button onclick="leer()">
+<button id="guardar" onclick="guardarTexto()">
+💾 Guardar
+</button>
+
+<button id="leer" onclick="leer()">
 ▶ Leer
 </button>
 
@@ -133,11 +265,31 @@ value="1">
 Si tienes instalada la voz Dalia, se seleccionará automáticamente.
 </div>
 
+<!-- Sección de Textos Guardados -->
+<div class="guardados-container">
+    <h2>📚 Mis Textos Guardados</h2>
+    
+    <div class="input-grupo">
+        <input
+        type="text"
+        id="nombreTexto"
+        placeholder="Nombre del texto (ej: Mi primer libro)..."
+        maxlength="100">
+    </div>
+    
+    <ul id="listaGuardados" class="lista-guardados">
+        <li class="sin-guardados">No hay textos guardados aún.</li>
+    </ul>
+</div>
+
 <script>
 
 const vocesSelect = document.getElementById("voces");
 const velocidad = document.getElementById("velocidad");
 const valorVelocidad = document.getElementById("valorVelocidad");
+const textareaTexto = document.getElementById("texto");
+const nombreTextoInput = document.getElementById("nombreTexto");
+const listaGuardados = document.getElementById("listaGuardados");
 
 let voces = [];
 
@@ -191,6 +343,136 @@ async function pegarTexto(){
         alert(
             "No se pudo acceder al portapapeles."
         );
+
+    }
+
+}
+
+function guardarTexto(){
+
+    const texto = textareaTexto.value.trim();
+    let nombre = nombreTextoInput.value.trim();
+
+    if(!texto){
+        alert("Escribe o pega un texto antes de guardar.");
+        return;
+    }
+
+    // Si no hay nombre, usar fecha y hora
+    if(!nombre){
+        const ahora = new Date();
+        nombre = `Texto ${ahora.toLocaleDateString()} ${ahora.toLocaleTimeString()}`;
+    }
+
+    // Obtener textos guardados
+    let textosGuardados = JSON.parse(localStorage.getItem("textosGuardados")) || [];
+
+    // Crear objeto con el nuevo texto
+    const nuevoTexto = {
+        id: Date.now(),
+        nombre: nombre,
+        contenido: texto,
+        fecha: new Date().toLocaleString()
+    };
+
+    // Agregar a la lista
+    textosGuardados.unshift(nuevoTexto);
+
+    // Guardar en localStorage
+    localStorage.setItem("textosGuardados", JSON.stringify(textosGuardados));
+
+    // Limpiar inputs
+    nombreTextoInput.value = "";
+
+    // Actualizar lista
+    mostrarTextosGuardados();
+
+    alert(`✅ Texto "${nombre}" guardado correctamente.`);
+
+}
+
+function mostrarTextosGuardados(){
+
+    let textosGuardados = JSON.parse(localStorage.getItem("textosGuardados")) || [];
+
+    listaGuardados.innerHTML = "";
+
+    if(textosGuardados.length === 0){
+        listaGuardados.innerHTML = '<li class="sin-guardados">No hay textos guardados aún.</li>';
+        return;
+    }
+
+    textosGuardados.forEach((item)=>{
+
+        const li = document.createElement("li");
+        li.className = "item-guardado";
+
+        const preview = item.contenido.substring(0, 60).replace(/\n/g, " ");
+
+        li.innerHTML = `
+            <div class="info-guardado" onclick="cargarTextoGuardado(${item.id})">
+                <div class="nombre-guardado">${item.nombre}</div>
+                <div class="texto-preview">${preview}${item.contenido.length > 60 ? "..." : ""}</div>
+                <div style="font-size:11px; color:#999;">${item.fecha}</div>
+            </div>
+            <div class="botones-item">
+                <button class="btn-cargar" onclick="cargarTextoGuardado(${item.id})">📖 Cargar</button>
+                <button class="btn-editar" onclick="editarTextoGuardado(${item.id})">✏️ Editar</button>
+                <button class="btn-eliminar" onclick="eliminarTexto(${item.id})">🗑️ Eliminar</button>
+            </div>
+        `;
+
+        listaGuardados.appendChild(li);
+
+    });
+
+}
+
+function cargarTextoGuardado(id){
+
+    let textosGuardados = JSON.parse(localStorage.getItem("textosGuardados")) || [];
+
+    const texto = textosGuardados.find(t => t.id === id);
+
+    if(texto){
+        textareaTexto.value = texto.contenido;
+        nombreTextoInput.value = texto.nombre;
+        textareaTexto.focus();
+    }
+
+}
+
+function editarTextoGuardado(id){
+
+    let textosGuardados = JSON.parse(localStorage.getItem("textosGuardados")) || [];
+
+    const indice = textosGuardados.findIndex(t => t.id === id);
+
+    if(indice !== -1){
+
+        const nuevoNombre = prompt("Nuevo nombre para el texto:", textosGuardados[indice].nombre);
+
+        if(nuevoNombre !== null && nuevoNombre.trim() !== ""){
+            textosGuardados[indice].nombre = nuevoNombre.trim();
+            localStorage.setItem("textosGuardados", JSON.stringify(textosGuardados));
+            mostrarTextosGuardados();
+        }
+
+    }
+
+}
+
+function eliminarTexto(id){
+
+    if(confirm("¿Estás seguro de que deseas eliminar este texto?")){
+
+        let textosGuardados = JSON.parse(localStorage.getItem("textosGuardados")) || [];
+
+        textosGuardados = textosGuardados.filter(t => t.id !== id);
+
+        localStorage.setItem("textosGuardados", JSON.stringify(textosGuardados));
+
+        mostrarTextosGuardados();
 
     }
 
@@ -264,6 +546,9 @@ if('serviceWorker' in navigator){
     });
 
 }
+
+// Cargar textos guardados al iniciar
+mostrarTextosGuardados();
 
 </script>
 
