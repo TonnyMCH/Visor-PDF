@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Guardar Texto</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -75,10 +76,12 @@
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
+            flex-wrap: wrap;
         }
 
         button {
             flex: 1;
+            min-width: 120px;
             padding: 12px 20px;
             border: none;
             border-radius: 8px;
@@ -115,6 +118,16 @@
         .btn-delete:hover {
             background: #ee5a52;
             transform: translateY(-2px);
+        }
+
+        .btn-pdf {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .btn-pdf:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(245, 87, 108, 0.4);
         }
 
         .info-box {
@@ -159,6 +172,25 @@
                 transform: translateY(0);
             }
         }
+
+        /* Estilos para el contenido oculto de PDF */
+        #pdfContent {
+            display: none;
+            padding: 40px;
+            background: white;
+        }
+
+        #pdfContent h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        #pdfContent p {
+            color: #555;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
     </style>
 </head>
 <body>
@@ -181,12 +213,19 @@
         <div class="buttons">
             <button class="btn-save" onclick="guardarTexto()">💾 Guardar</button>
             <button class="btn-clear" onclick="limpiarTexto()">🗑️ Limpiar</button>
-            <button class="btn-delete" onclick="eliminarGuardado()">🗑️ Eliminar guardado</button>
+            <button class="btn-pdf" onclick="exportarPDF()">📄 Exportar PDF</button>
+            <button class="btn-delete" onclick="eliminarGuardado()">🗑️ Eliminar</button>
         </div>
 
         <div class="info-box">
-            <strong>💡 Información:</strong> Tu texto se guarda en el navegador. Puedes cerrar la página y cuando regreses, tu texto seguirá aquí.
+            <strong>💡 Información:</strong> Tu texto se guarda en el navegador. Puedes cerrar la página y cuando regreses, tu texto seguirá aquí. Con el botón "Exportar PDF" puedes descargar tu texto en un documento más amplio.
         </div>
+    </div>
+
+    <!-- Contenedor oculto para generar el PDF -->
+    <div id="pdfContent">
+        <h2>Documento Exportado</h2>
+        <p id="pdfText"></p>
     </div>
 
     <script>
@@ -207,6 +246,7 @@
             localStorage.setItem('textoGuardado', texto);
             
             // Mostrar mensaje de éxito
+            successMessage.textContent = '✓ ¡Texto guardado exitosamente!';
             successMessage.classList.add('show');
             setTimeout(() => {
                 successMessage.classList.remove('show');
@@ -237,6 +277,35 @@
                     successMessage.classList.remove('show');
                 }, 2000);
             }
+        }
+
+        function exportarPDF() {
+            const texto = textarea.value;
+            
+            if (texto.trim() === '') {
+                alert('Por favor, escribe algo antes de exportar a PDF');
+                return;
+            }
+
+            const element = document.getElementById('pdfContent');
+            document.getElementById('pdfText').textContent = texto;
+
+            const opt = {
+                margin: 10,
+                filename: 'documento_' + new Date().toISOString().split('T')[0] + '.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+            };
+
+            html2pdf().set(opt).from(element).save();
+
+            // Mostrar mensaje de éxito
+            successMessage.textContent = '✓ ¡PDF descargado exitosamente!';
+            successMessage.classList.add('show');
+            setTimeout(() => {
+                successMessage.classList.remove('show');
+            }, 2000);
         }
     </script>
 </body>
