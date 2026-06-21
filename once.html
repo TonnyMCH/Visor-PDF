@@ -268,18 +268,23 @@ function importarJSON(e){
   reader.readAsText(file);
 }
 
+/* ===== FORMATO DE NÚMEROS ===== */
+function formatearNumero(num){
+  return Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
 /* ===== WHATSAPP ===== */
 function enviarWhatsApp(){
   let msg="🧾 Factura%0A";
   ventas.forEach(v=>{
-    if(v) msg+=`${v.f} x${v.c} = ₡${v.sub}%0A`;
+    if(v) msg+=`${v.f} x${v.c} = ₡${formatearNumero(v.sub)}%0A`;
   });
   const efectivo = Number(document.getElementById("efectivo").value) || 0;
 const cambio = efectivo - total;
 
-msg+=`Total: ₡${total}%0A`;
-msg+=`Efectivo: ₡${efectivo}%0A`;
-msg+=`Cambio: ₡${cambio >= 0 ? cambio : 0}`;
+msg+=`Total: ₡${formatearNumero(total)}%0A`;
+msg+=`Efectivo: ₡${formatearNumero(efectivo)}%0A`;
+msg+=`Cambio: ₡${formatearNumero(cambio >= 0 ? cambio : 0)}`;
   window.open(`https://wa.me/?text=${msg}`);
 }
 
