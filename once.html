@@ -215,30 +215,70 @@ function manejarEnter(event){
 }
 
 function agregarVenta(){
-  const otrosChecked = document.getElementById('otros').checked;
-  // Si la casilla está marcada, forzamos fruta "Otros" y cantidad 1
-  const frutaSel = otrosChecked ? 'Otros' : frutaVenta.value;
-  const cantidadVal = otrosChecked ? 1 : Number(cantidad.value);
-  if(!frutaSel || !cantidadVal) return;
-  // Si "Otros" no tiene precio definido, tomamos precio 0
-  const precioObj = precios[frutaSel] || { precio: 0, tipo: 'unidad' };
-  const sub = cantidadVal * Number(precioObj.precio || 0);
-  ventas.push({ f: frutaSel, c: cantidadVal, sub });
+
+  if(document.getElementById("chkOtros").checked){
+
+      if(!cantidad.value) return;
+
+      const nombre =
+          document.getElementById("nombreOtro").value.trim() || "Otros";
+
+      const sub = Number(cantidad.value); // precio fijo ₡1 × cantidad
+
+      ventas.push({
+          f:nombre,
+          c:1,
+          sub
+      });
+
+      total += sub;
+
+      const i = ventas.length-1;
+
+      lista.innerHTML += `
+      <tr data-i="${i}">
+          <td>${nombre}</td>
+          <td>₡${formatearNumero(sub)}</td>
+          <td>₡${formatearNumero(sub)}</td>
+          <td><button class="red" onclick="borrarFila(${i})">❌</button></td>
+      </tr>`;
+
+      document.getElementById("total").textContent = formatearNumero(total);
+
+      cantidad.value="";
+      document.getElementById("nombreOtro").value="";
+      calcularCambio();
+      return;
+  }
+
+  if(!frutaVenta.value || !cantidad.value) return;
+
+  const sub = cantidad.value * precios[frutaVenta.value].precio;
+
+  ventas.push({
+      f:frutaVenta.value,
+      c:cantidad.value,
+      sub
+  });
+
   total += sub;
-  const i = ventas.length - 1;
+
+  const i = ventas.length-1;
+
   lista.innerHTML += `
   <tr data-i="${i}">
-    <td>${frutaSel}</td>
-    <td>${cantidadVal}</td>
-    <td>₡${sub}</td>
-    <td><button class="red" onclick="borrarFila(${i})">❌</button></td>
+      <td>${frutaVenta.value}</td>
+      <td>${cantidad.value}</td>
+      <td>₡${formatearNumero(sub)}</td>
+      <td><button class="red" onclick="borrarFila(${i})">❌</button></td>
   </tr>`;
-  document.getElementById("total").textContent = total;
-  cantidad.value = "";
-  // opcional: desmarcar la casilla después de usarla
-  if(otrosChecked) document.getElementById('otros').checked = false;
+
+  document.getElementById("total").textContent = formatearNumero(total);
+
+  cantidad.value="";
   calcularCambio();
 }
+
 
 function borrarFila(i){
   total-=ventas[i].sub;
