@@ -4,13 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Unificar Imágenes y PDFs</title>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.16.0/pdf-lib.min.js"></script>
 
     <link rel="icon" href="imagenes/imagen2.png" type="image/png">
 
     <style>
         body {
-            font-family: Arial;
+            font-family: Arial, sans-serif;
             padding: 20px;
             max-width: 600px;
             margin: auto;
@@ -28,10 +29,21 @@
             box-shadow: 0 3px 8px rgba(0,0,0,0.1);
         }
 
-        input[type="file"] {
+        input[type="file"],
+        input[type="text"] {
+            box-sizing: border-box;
             width: 100%;
             padding: 12px;
             font-size: 16px;
+            margin-bottom: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin: 12px 0 8px;
         }
 
         button {
@@ -49,74 +61,236 @@
             background: #2e7dff;
         }
 
-            .primary:hover {
-                background: #1b5fcc;
-            }
+        .primary:hover {
+            background: #1b5fcc;
+        }
 
         .whatsapp-btn {
             background: #25D366;
         }
 
-            .whatsapp-btn:hover {
-                background: #1aa64a;
-            }
+        .whatsapp-btn:hover {
+            background: #1aa64a;
+        }
+
+        #estado {
+            text-align: center;
+            margin-top: 15px;
+            overflow-wrap: anywhere;
+        }
     </style>
 </head>
+
 <body>
 
 <h2>Unificar Imágenes o PDFs</h2>
 
 <div class="card">
-    <input type="file" id="fileInput" multiple accept="image/*,application/pdf">
 
-    <button class="primary" onclick="mergeFiles()">Unificar en PDF</button>
-    <button class="whatsapp-btn" onclick="shareWhatsApp()">Compartir PDF por WhatsApp</button>
+    <label for="nombrePDF">Nombre del archivo PDF:</label>
+    <input
+        type="text"
+        id="nombrePDF"
+        value="unificado"
+        placeholder="Escribe el nombre del archivo"
+        maxlength="150"
+    >
+
+    <label for="fileInput">Seleccionar imágenes o documentos PDF:</label>
+    <input
+        type="file"
+        id="fileInput"
+        multiple
+        accept="image/*,application/pdf"
+    >
+
+    <button class="primary" id="btnUnificar" onclick="mergeFiles()">
+        Unificar en PDF
+    </button>
+
+    <button class="whatsapp-btn" onclick="shareWhatsApp()">
+        Compartir PDF por WhatsApp
+    </button>
+
+    <p id="estado"></p>
+
 </div>
 
 <script>
     let lastPDFBlob = null;
+    let lastPDFName = "";
+
+    function obtenerNombreArchivo() {
+        let nombre = document.getElementById("nombrePDF").value.trim();
+
+        if (!nombre) {
+            nombre = "unificado";
+        }
+
+        // Eliminar caracteres no permitidos en nombres de archivos.
+        nombre = nombre
+            .replace(/[<>:"/\\|?*\x00-\x1F]/g, "_")
+            .replace(/[. ]+$/g, "")
+            .trim();
+
+        if (!nombre) {
+            nombre = "unificado";
+        }
+
+        // Evitar agregar .pdf dos veces.
+        nombre = nombre.replace(/\.pdf$/i, "");
+
+        return (nombre || "unificado") + ".pdf";
+    }
 
     async function mergeFiles() {
         const fileInput = document.getElementById("fileInput");
-        const files = fileInput.files;
+        const files = Array.from(fileInput.files);
+        const estado = document.getElementById("estado");
+        const boton = document.getElementById("btnUnificar");
 
         if (files.length === 0) {
             alert("Selecciona al menos un archivo.");
             return;
         }
 
-        const { PDFDocument } = PDFLib;
-        const mergedPdf = await PDFDocument.create();
+        boton.disabled = true;
+        estado.textContent = "Preparando el PDF...";
 
-        for (const file of files) {
-            const bytes = await file.arrayBuffer();
+        try {
+            const { PDFDocument } = PDFLib;
+            const mergedPdf = await PDFDocument.create();
 
-            if (file.type === "application/pdf") {
-                const pdfDoc = await PDFDocument.load(bytes);
-                const pages = await mergedPdf.copyPages(pdfDoc, pdfDoc.getPageIndices());
-                pages.forEach(p => mergedPdf.addPage(p));
+            for (const file of files) {
+                const bytes = await file.arrayBuffer();
 
-            } else {
-                let img;
-                try {
-                    img = await mergedPdf.embedJpg(bytes);
-                } catch {
-                    img = await mergedPdf.embedPng(bytes);
+                if (file.type === "application/pdf" ||
+                    file.name.toLowerCase().endsWith(".pdf")) {
+
+                    const pdfDoc = await PDFDocument.load(bytes);
+
+                    const pages = await mergedPdf.copyPages(
+                        pdfDoc,
+                        pdfDoc.getPageIndices()
+                    );
+
+                    pages.forEach(page => mergedPdf.addPage(page));
+
+                } else if (file.type.startsWith("image/")) {
+
+                    let img;
+
+                    if (file.type === "image/jpeg" ||
+                        file.type === "image/jpg") {
+                        img = await mergedPdf.embedJpg(bytes);
+
+                    } else if (file.type === "image/png") {
+                        img = await mergedPdf.embedPng(bytes);
+
+                    } else {
+                        // Convertir otros formatos de imagen, como WEBP,
+                        // a PNG mediante el navegador.
+                        const dataURL = await new Promise(
+                            (resolve, reject) => {
+                                const reader = new FileReader();
+                                reader.onload = () => resolve(reader.result);
+                                reader.onerror = reject;
+                                reader.readAsDataURL(file);
+                            }
+                        );
+
+                        const imagen = await new Promise(
+                            (resolve, reject) => {
+                                const image = new Image();
+                                image.onload = () => resolve(image);
+                                image.onerror = reject;
+                                image.src = dataURL;
+                            }
+                        );
+
+                        const canvas = document.createElement("canvas");
+                        canvas.width = imagen.naturalWidth;
+                        canvas.height = imagen.naturalHeight;
+
+                        const ctx = canvas.getContext("2d");
+                        ctx.drawImage(imagen, 0, 0);
+
+                        const pngBlob = await new Promise(resolve =>
+                            canvas.toBlob(resolve, "image/png")
+                        );
+
+                        if (!pngBlob) {
+                            throw new Error(
+                                "No se pudo procesar la imagen: " + file.name
+                            );
+                        }
+
+                        img = await mergedPdf.embedPng(
+                            await pngBlob.arrayBuffer()
+                        );
+                    }
+
+                    const page = mergedPdf.addPage([
+                        img.width,
+                        img.height
+                    ]);
+
+                    page.drawImage(img, {
+                        x: 0,
+                        y: 0,
+                        width: img.width,
+                        height: img.height
+                    });
+
+                } else {
+                    throw new Error(
+                        "Formato de archivo no compatible: " + file.name
+                    );
                 }
-
-                const page = mergedPdf.addPage([img.width, img.height]);
-                page.drawImage(img, { x: 0, y: 0, width: img.width, height: img.height });
             }
+
+            if (mergedPdf.getPageCount() === 0) {
+                throw new Error("No se encontraron páginas para unificar.");
+            }
+
+            const pdfBytes = await mergedPdf.save();
+
+            lastPDFBlob = new Blob(
+                [pdfBytes],
+                { type: "application/pdf" }
+            );
+
+            lastPDFName = obtenerNombreArchivo();
+
+            // Descargar utilizando el nombre elegido.
+            const url = URL.createObjectURL(lastPDFBlob);
+            const link = document.createElement("a");
+
+            link.href = url;
+            link.download = lastPDFName;
+
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+            estado.textContent =
+                "PDF creado correctamente: " + lastPDFName;
+
+        } catch (error) {
+            console.error(error);
+
+            estado.textContent = "No se pudo crear el PDF.";
+
+            alert(
+                "Ocurrió un error al crear el PDF:\n" +
+                error.message
+            );
+
+        } finally {
+            boton.disabled = false;
         }
-
-        const pdfBytes = await mergedPdf.save();
-        lastPDFBlob = new Blob([pdfBytes], { type: "application/pdf" });
-
-        // Descargar
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(lastPDFBlob);
-        link.download = "unificado.pdf";
-        link.click();
     }
 
     async function shareWhatsApp() {
@@ -125,23 +299,50 @@
             return;
         }
 
-        const file = new File([lastPDFBlob], "unificado.pdf", { type: "application/pdf" });
+        const file = new File(
+            [lastPDFBlob],
+            lastPDFName || obtenerNombreArchivo(),
+            { type: "application/pdf" }
+        );
 
-        // Verificar si el dispositivo soporta compartir archivos
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        if (navigator.canShare &&
+            navigator.canShare({ files: [file] })) {
+
             try {
                 await navigator.share({
                     files: [file],
-                    title: "PDF Unificado",
-                    text: "Aquí tienes el archivo PDF unificado."
+                    title: lastPDFName,
+                    text: "Aquí tienes el archivo PDF."
                 });
-            } catch (err) {
-                console.error("Error al compartir:", err);
+
+            } catch (error) {
+                if (error.name !== "AbortError") {
+                    console.error("Error al compartir:", error);
+                    alert("No se pudo compartir el archivo.");
+                }
             }
+
         } else {
-            alert("Tu dispositivo o navegador no permite enviar archivos a WhatsApp desde aquí.\n\nPrueba desde un móvil Android.");
+            alert(
+                "Tu navegador no permite compartir archivos directamente.\n\n" +
+                "El PDF ya se descargó. Puedes adjuntarlo manualmente " +
+                "en WhatsApp."
+            );
         }
     }
+
+    // Si se cambia el nombre después de generar el PDF,
+    // avisar que debe volver a generarlo para aplicar el cambio.
+    document.getElementById("nombrePDF").addEventListener(
+        "input",
+        () => {
+            if (lastPDFBlob) {
+                document.getElementById("estado").textContent =
+                    "Cambiaste el nombre. Pulsa «Unificar en PDF» " +
+                    "para generar el archivo con el nuevo nombre.";
+            }
+        }
+    );
 </script>
 
 </body>
