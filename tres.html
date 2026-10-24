@@ -13,10 +13,11 @@
 <style>
 /* ===== MÁRGENES PDF ===== */
 @page{
-  margin-top: 2cm;
-  margin-bottom: 2cm;
-  margin-left: 0;
-  margin-right: 0;
+  size: letter portrait;
+  margin-top: 2.5cm;
+  margin-bottom: 2.5cm;
+  margin-left: 2cm;
+  margin-right: 2cm;
 }
 
 /* ===== BASE ===== */
@@ -84,25 +85,47 @@ button.primary{
 }
 
 /* ===== PREVIEW PDF ===== */
-#previewWrap{
-  width:21.59cm;
-  background:#fff;
+#previewWrap {
+  width: 21.59cm;
+  background: #fff;
+  box-sizing: border-box;
 }
 
-#preview{
-  font-family:'Times New Roman', Times, serif;
-  font-size:12pt;
-  padding-left:2cm;
-  padding-right:2cm;
-  box-sizing:border-box;
+#preview {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 2cm;
+
+  font-family: "Times New Roman", Times, serif;
+  font-size: 12pt;
+  line-height: 1.5;
+
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  white-space: normal;
 }
 
-#preview p{
-  margin:8pt 0;
-  page-break-inside:avoid;
-  break-inside:avoid;
+#preview p {
+  margin: 0 0 8pt;
+  line-height: 1.5;
+
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+
+  page-break-inside: auto;
+  break-inside: auto;
 }
 
+#preview div,
+#preview span {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+#preview img {
+  max-width: 100%;
+  height: auto;
+}
 /* ===== MODO MÓVIL ===== */
 @media (max-width:768px){
 
@@ -167,30 +190,59 @@ button.primary{
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
 
 <script>
-function cmd(command){
-  document.execCommand(command);
+const source = document.getElementById('source');
+const preview = document.getElementById('preview');
+const previewWrap = document.getElementById('previewWrap');
+
+function cmd(command) {
+  source.focus();
+  document.execCommand(command, false, null);
 }
 
-function applyFormatting(){
+function applyFormatting() {
   preview.innerHTML = source.innerHTML;
 }
 
-function printPreview(){
+function printPreview() {
   applyFormatting();
   window.print();
 }
 
-function downloadPdf(){
+async function downloadPdf() {
   applyFormatting();
-  html2pdf().set({
-    margin:0,
-    filename:'documento.pdf',
-    pagebreak:{ mode:['css','avoid-all'] },
-    html2canvas:{ scale:3 },
-    jsPDF:{ unit:'cm', format:'letter', orientation:'portrait' }
-  }).from(previewWrap).save();
+
+  const options = {
+    margin: [2.5, 0, 2.5, 0],
+    filename: 'documento.pdf',
+
+    image: {
+      type: 'jpeg',
+      quality: 0.98
+    },
+
+    html2canvas: {
+      scale: 2,
+      useCORS: true,
+      scrollX: 0,
+      scrollY: 0
+    },
+
+    jsPDF: {
+      unit: 'cm',
+      format: 'letter',
+      orientation: 'portrait'
+    },
+
+    pagebreak: {
+      mode: ['css', 'legacy']
+    }
+  };
+
+  await html2pdf()
+    .set(options)
+    .from(preview)
+    .save();
 }
 </script>
-
 </body>
 </html>
